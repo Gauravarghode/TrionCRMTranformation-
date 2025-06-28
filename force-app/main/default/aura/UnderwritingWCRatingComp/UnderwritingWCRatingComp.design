@@ -1,0 +1,5 @@
+<design:component>
+    <design:attribute name="isShowSelectCarrierButton" label="Show Select Carrier" default="true"/>
+    <design:attribute name="isShowAddWCCode" label="Show Add WC Code" default="true"/>
+    <design:attribute name="buttonvisibilitysoqlFilter" label="Button Visibility SOQL Filter" default=""/>
+</design:component>

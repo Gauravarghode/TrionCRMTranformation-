@@ -1,0 +1,22 @@
+.THIS .custom-css-vertical{
+    border-bottom: 2px solid #f8bac4;
+}
+
+.THIS .slds-theme_shade{
+    background-color: #f8bac4 !Important;
+    color: #ffffff !Important;
+}
+
+
+.THIS .green { 
+   background-image: url("/img/samples/flag_green.gif");
+    background-repeat: no-repeat; 
+    color:white;
+    font-size:1px;
+}
+.THIS .red {
+   background-image: url("/img/samples/flag_red.gif");
+    background-repeat: no-repeat;  
+        color:white;
+    font-size:1px;
+}

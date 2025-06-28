@@ -1,0 +1,14 @@
+<apex:page standardController="Proposal__c" extensions="ProposalPricingMatrix" lightningStylesheets="true" action="{!doProcess}">
+<apex:sectionHeader title="Pricing Matrix"/>
+<apex:form >
+
+<apex:pageblock >
+
+<apex:pagemessages ></apex:pagemessages>
+
+<apex:pageBlockButtons location="bottom">
+<apex:commandButton value="Cancel" action="{!Cancel}"/>
+</apex:pageBlockButtons>
+</apex:pageblock>
+</apex:form>
+</apex:page>

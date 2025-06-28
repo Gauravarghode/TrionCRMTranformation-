@@ -1,0 +1,815 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" 
+                access="global"
+                controller="SubmissionDocumentsCompCtrl">
+    <!--attribute-->
+    <aura:attribute name="topHeader" type="String"/> 
+    <aura:attribute name="status" type="String"/>
+    <aura:attribute name="Requiredstatus" type="String"/>
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="opp" type="Opportunity"/>
+    <aura:attribute name="oProposal" type="Proposal__c"/>
+    <aura:attribute name="oWCRate" type="WC_Rate__c"/>
+    <aura:attribute name="lstSubmissionRequirement" type="List"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="sortedBy" type="String" />
+    <aura:attribute name="selectedRows" type="List"/>
+    <aura:attribute name="submissionRequirementNotes" type="String" />
+    <aura:attribute name="contentDocumentId" type="String" />
+    <aura:attribute name="natureofBusinessDescription" type="String" />
+    <aura:attribute name="oSubmissionRequirement" type="Submission_Requirement__c"/>
+    <aura:attribute name="sortedDirection" type="Boolean" default="true" />
+    <aura:attribute name="isShowUploadModal" type="Boolean" default="false" />
+    <aura:attribute name="isShowViewModal" type="Boolean" default="false" />
+    <aura:attribute name="isFileUploaded" type="Boolean" default="false" />
+    <aura:attribute name="isShowAddNote" type="Boolean" default="false" />
+    <aura:attribute name="isShowWorkSubContracted" type="Boolean" default="false" />
+    <aura:attribute name="isShowVOLUNTEER_OR_DONATED_LABOR_EXPLANATION" type="Boolean" default="false" />
+    <aura:attribute name="isShowEmployeesWorkFromHome" type="Boolean" default="false" />
+    <aura:attribute name="isShowSPECIFYTAXLIENSBANKRUPTCY" type="Boolean" default="false" />
+    <aura:attribute name="isShowEXPLAINUNDISPUTEDANDUNPAIDWCPREMIUM" type="Boolean" default="false" />
+    <aura:attribute name="isShowAccordSignatureRequestButton" type="Boolean" default="false" />
+    <aura:attribute name="isShowGenerateACORDButton" type="Boolean" default="false" />
+    
+    <aura:attribute name="SelectedRequirementTypeId" type="String"/> 
+    <aura:attribute name="isTrue" type="Boolean" default="false"/>
+    <aura:attribute name="selectedAcordTypeId" type="String"/>
+    <aura:attribute name="proposalId" type="String"/>
+    <aura:attribute name="mapOfACORDType" type="Map"/>
+    <aura:attribute name="selectedAcordtype" type="String" />
+
+    
+    <aura:attribute name="selectedRecordId" type="String"/>
+    
+    <aura:attribute name="lstWCRate" type="List"/>
+    <aura:attribute name="WCRateColumns" type="List"/>
+    <aura:attribute name="WCRateSortedBy" type="String"/>
+    <aura:attribute name="WCRateSortedDirection" type="Boolean" default="true" />
+    
+    <aura:attribute name="selectedWcRateId" type="String"/>
+    <aura:attribute name="selectedWcRateName" type="String"/>
+    <aura:attribute name="isShowStateRatingModal" type="Boolean" default="fasle" />
+    <aura:attribute name="isShowAddCompCodeListModal" type="Boolean" default="false" />
+    
+    <aura:attribute name="wcRateWhereClause" type="String"/>
+    <aura:attribute name="selectedStateCompCode" type="String"/>
+    
+    <aura:attribute name="selectedClientLocation" type="String"/>
+    <aura:attribute name="mapClientLocationPicklistValues" type="Map"/>
+    
+    <aura:attribute name="buttonvisibilitysoqlFilter" type="String"/>
+    <aura:attribute name="isButtonVisible" type="Boolean" default="true"/>
+    
+    <!--handler-->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <!--markup-->
+    <div>
+        <!--spinner-->
+        <lightning:spinner aura:id="spinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+        
+        <div class="slds-grid slds-wrap">
+            
+            <aura:if isTrue="{!v.topHeader != null &amp;&amp; v.topHeader != undefined}">
+                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small slds-text-align_center slds-text-heading_medium">
+                    <b>{!v.topHeader}</b>
+                </div>
+            </aura:if>
+            
+            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                <lightning:datatable aura:id="submissionTable"
+                                     columns="{! v.columns }"
+                                     data="{! v.lstSubmissionRequirement }"
+                                     keyField="Id"
+                                     hideCheckboxColumn="true"
+                                     sortedBy="{!v.sortedBy}"
+                                     maxRowSelection="1"
+                                     sortedDirection="{!v.sortedDirection}" 
+                                     onsort="{!c.handleColumnSorting}"
+                                     onrowselection="{!c.handleRowSelection}"
+                                     onrowaction="{! c.handleRowAction }"/>
+            </div>
+            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                <aura:if isTrue="{!v.isButtonVisible}">
+                	<button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleUploadDocument}">Upload Document</button>
+                </aura:if>
+                <!--<button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleViewDocument}">View Document</button>-->
+            </div>
+        </div>
+        
+        <aura:if isTrue="{!v.isShowUploadModal}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_medium" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                
+                <lightning:spinner aura:id="modalspinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+                
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.handleHideUploadModal}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">{!v.oSubmissionRequirement.Requirement_Type__c}</h2>
+                        <aura:if isTrue="{!v.oSubmissionRequirement.Requirement_Type__c == 'ACORD'}">
+                            	By selecting the Trion ACORD form, you are required to complete all 
+                                sections on this page so the ACORD can be autogenerated by the Underwriting Office. 
+                                If you choose to upload a completed ACORD form, select the ‘Uploaded ACORD’ option.
+                        </aura:if>
+                    </header>
+                    <div class="slds-modal__content slds-p-top_medium slds-p-bottom_medium slds-p-left_xx-small slds-p-right_xx-small" id="modal-content-id-1">
+                        
+                        <!--Select Requirement Type-->
+                        <aura:if isTrue="{!v.isTrue}">
+                            <div class="slds-section slds-is-open slds-p-top_small">
+                                <h3 class="slds-section__title slds-theme_shade">
+                                    <span class="slds-truncate slds-p-horizontal_small">SELECT Requirement Type</span>
+                                </h3>
+                                <div aria-hidden="false" class="slds-section__content slds-p-left_medium slds-p-right_medium">
+                                    <lightning:select onchange="{!c.handleOnchange}" name="RequireMentType" label="Requirement Type" required="true" value="{!v.SelectedRequirementTypeId}">
+                                        <option value="">--None--</option>
+                                        <aura:iteration items="{!v.lstSubmissionRequirement}" var="req">
+                                            <option text="{!req.Requirement_Type__c}" value="{!req.Id}" selected="{!req.selected}" />
+                                        </aura:iteration>
+                                    </lightning:select>
+                                </div>
+                            </div>
+                            <aura:set attribute="else">
+                                <!--acord-section-->
+                                <aura:if isTrue="{!v.oSubmissionRequirement.Requirement_Type__c != null 
+                                                 &amp;&amp; v.oSubmissionRequirement.Requirement_Type__c != undefined 
+                                                 &amp;&amp; v.oSubmissionRequirement.Requirement_Type__c == 'ACORD'}">
+                                    <div class ="slds-section slds-is-open slds-p-top_small">
+                                        <h3 class="slds-section__title slds-theme_shade">
+                                            <span class="slds-truncate slds-p-horizontal_small">ACORD Type</span>
+                                        </h3>
+                                        <div aria-hidden="false" class="slds-section__content slds-p-left_medium slds-p-right_medium">
+                                            <div class="slds-grid slds-wrap">
+                                                <div class="slds-size_1-of-1 slds-p-right_small">
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                                            <lightning:select aura:id="acordType" value="{!v.selectedAcordtype}" name="ACORD Type" label="ACORD Type" required="true">
+                                                                <option value="">--None--</option>
+                                                                <aura:iteration items="{!v.mapOfACORDType}" var="ind" indexVar="index">
+                                                                    <option text="{!ind.value}" value="{!ind.key}" selected="{!v.selectedAcordtype==ind.key}"/>
+                                                                </aura:iteration>
+                                                            </lightning:select>
+                                                        </div>  
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--Officers-->
+                                    <div class="slds-section slds-is-open slds-p-top_small">
+                                        <h3 class="slds-section__title slds-theme_shade">
+                                            <span class="slds-truncate slds-p-horizontal_small">Policy Information</span>
+                                        </h3>
+                                        <div aria-hidden="false" class="slds-section__content slds-p-left_medium slds-p-right_medium">
+											<div class="slds-grid slds-wrap">
+                                                <div class="slds-size_1-of-2 slds-p-right_small">
+                                                    <div class="slds-form-element">
+                                                        <span class="slds-form-element__label">Proposed Effective Date</span>
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-form-element__static">
+                                                                <lightning:input type="date" value="{!v.oProposal.Proposed_Effective_Date__c}" dateStyle="short"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-size_1-of-2">
+                                                    <div class="slds-form-element">
+                                                        <span class="slds-form-element__label">Proposed Exp Date</span>
+                                                        <div class="slds-form-element__control">
+                                                            <div class="slds-form-element__static">
+                                                                <lightning:input type="date" value="{!v.oProposal.Proposed_Exp_Date__c}" dateStyle="short"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!--sub:PART 2 - EMPLOYER'S LIABILITY-->
+                                            <div class="slds-section slds-is-open slds-p-top_small">
+                                                <h3 class="slds-section__title slds-theme_shade">
+                                                    <span class="slds-truncate slds-p-horizontal_small">PART 2 - EMPLOYER'S LIABILITY</span>
+                                                </h3>
+                                                <div aria-hidden="false" class="slds-section__content slds-p-left_medium slds-p-right_medium">
+                                                    <div class="slds-grid slds-wrap">
+                                                        <div class="slds-size_1-of-2 slds-p-right_small">
+                                                            <div class="slds-form-element">
+                                                                <span class="slds-form-element__label">EACH ACCIDENT</span>
+                                                                <div class="slds-form-element__control">
+                                                                    <div class="slds-form-element__static">
+                                                                        <lightning:input type="number" value="{!v.oSubmissionRequirement.EACH_ACCIDENT__c}" formatter="currency" step="0.01"/>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="slds-size_1-of-2">
+                                                            <div class="slds-form-element">
+                                                                <span class="slds-form-element__label">DISEASE POLICY LIMIT</span>
+                                                                <div class="slds-form-element__control">
+                                                                    <div class="slds-form-element__static">
+                                                                        <lightning:input type="number" value="{!v.oSubmissionRequirement.DISEASE_POLICY_LIMIT__c}" formatter="currency" step="0.01"/>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="slds-size_1-of-2 slds-p-right_small">
+                                                            <div class="slds-form-element">
+                                                                <span class="slds-form-element__label">DISEASE EACH EMPLOYEE</span>
+                                                                <div class="slds-form-element__control">
+                                                                    <div class="slds-form-element__static">
+                                                                        <lightning:input type="number" value="{!v.oSubmissionRequirement.DISEASE_EACH_EMPLOYEE__c}" formatter="currency" step="0.01"/>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!--sub:OTHER COVERAGES-->
+                                            <div class="slds-section slds-is-open slds-p-top_small">
+                                                <h3 class="slds-section__title slds-theme_shade">
+                                                    <span class="slds-truncate slds-p-horizontal_small">OTHER COVERAGES</span>
+                                                </h3>
+                                                <div aria-hidden="false" class="slds-section__content slds-p-left_medium slds-p-right_medium">
+													<div class="slds-grid slds-wrap">
+                                                        <div class="slds-size_1-of-2 slds-p-right_small">
+                                                            <div class="slds-form-element">
+                                                                <span class="slds-form-element__label">U.S.L. &amp; H.</span>
+                                                                <div class="slds-form-element__control">
+                                                                    <div class="slds-form-element__static">
+                                                                        <lightning:input type="checkbox" variant="label-hidden" checked="{!v.oSubmissionRequirement.U_S_L_H__c}" />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="slds-size_1-of-2">
+                                                            <div class="slds-form-element">
+                                                                <span class="slds-form-element__label">VOLUNTARY COMP</span>
+                                                                <div class="slds-form-element__control">
+                                                                    <div class="slds-form-element__static">
+                                                                        <lightning:input type="checkbox" variant="label-hidden" checked="{!v.oSubmissionRequirement.VOLUNTARY_COMP__c}" />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="slds-size_1-of-2 slds-p-right_small">
+                                                            <div class="slds-form-element">
+                                                                <span class="slds-form-element__label">FOREIGN COV</span>
+                                                                <div class="slds-form-element__control">
+                                                                    <div class="slds-form-element__static">
+                                                                        <lightning:input type="checkbox" variant="label-hidden" checked="{!v.oSubmissionRequirement.FOREIGN_COV__c}" />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="slds-size_1-of-2">
+                                                            <div class="slds-form-element">
+                                                                <span class="slds-form-element__label">MANAGED CARE OPTION</span>
+                                                                <div class="slds-form-element__control">
+                                                                    <div class="slds-form-element__static">
+                                                                        <lightning:input type="checkbox" variant="label-hidden" checked="{!v.oSubmissionRequirement.MANAGED_CARE_OPTION__c}" />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!--sub:TOTAL ESTIMATED ANNUAL PREMIUM - ALL STATES-->
+                                            <div class="slds-section slds-is-open slds-p-top_small">
+                                                <h3 class="slds-section__title slds-theme_shade">
+                                                    <span class="slds-truncate slds-p-horizontal_small">TOTAL ESTIMATED ANNUAL PREMIUM - ALL STATES</span>
+                                                </h3>
+                                                <div aria-hidden="false" class="slds-section__content slds-p-left_medium slds-p-right_medium">
+													<div class="slds-grid slds-wrap">
+                                                        <div class="slds-size_1-of-1">
+                                                            <div class="slds-form-element">
+                                                                <span class="slds-form-element__label">TOTAL ESTIMATED ANNUAL PREMIUM ALL STATE</span>
+                                                                <div class="slds-form-element__control">
+                                                                    <div class="slds-form-element__static">
+                                                                        <lightning:input type="number" value="{!v.oProposal.TOTAL_ESTIMATED_ANNUAL_PREMIUM_ALL_STATE__c}" formatter="currency" step="0.01"/>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                    
+                                    <!--Officers-->
+                                    <div class="slds-section slds-is-open slds-p-top_small">
+                                        <h3 class="slds-section__title slds-theme_shade">
+                                            <span class="slds-truncate slds-p-horizontal_small">Contact Information</span>
+                                        </h3>
+                                        <div aria-hidden="false" class="slds-section__content slds-p-left_medium slds-p-right_medium">
+                                            <c:ClientContactsComp recordId="{!v.recordId}" clientContactsWhereClause="Type__c IN ('Inspection','Accting Record','Claims Info')" isSubmissionDocument="true" isContactInformation="true"/>
+                                        </div>
+                                    </div>
+                                    
+                                    <!--Officers-->
+                                    <div class="slds-section slds-is-open slds-p-top_small">
+                                        <h3 class="slds-section__title slds-theme_shade">
+                                            <span class="slds-truncate slds-p-horizontal_small">Officers</span>
+                                        </h3>
+                                        <div aria-hidden="false" class="slds-section__content slds-p-left_medium slds-p-right_medium">
+                                            <c:ClientContactsComp recordId="{!v.recordId}" clientContactsWhereClause="INC_EXC__c IN ('Included','Excluded')" isSubmissionDocument="true"/>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="slds-section slds-is-open slds-p-top_small">
+                                        <h3 class="slds-section__title slds-theme_shade">
+                                            <span class="slds-truncate slds-p-horizontal_small">State Rating</span>
+                                        </h3>
+                                        <div aria-hidden="false" class="slds-section__content slds-p-left_medium slds-p-right_medium">
+                                            <div class="slds-grid slds-wrap">
+                                                <div class="slds-size_1-of-1">
+                                                    <lightning:datatable aura:id="stateRating"
+                                                                         columns="{! v.WCRateColumns }"
+                                                                         data="{! v.lstWCRate }"
+                                                                         hideCheckboxColumn="true"
+                                                                         keyField="Id"
+                                                                         sortedBy="{!v.WCRateSortedBy}"
+                                                                         sortedDirection="{!v.WCRateSortedDirection}" 
+                                                                         onsort="{!c.handleWCRateColumnSorting}"
+                                                                         onrowaction="{! c.handleWCRateRowAction }"/>
+                                                </div>
+                                                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                                    <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleShowAddWCCodeModal}">Add WC Code</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="slds-section slds-is-open slds-p-top_small">
+                                        <h3 class="slds-section__title slds-theme_shade">
+                                            <span class="slds-truncate slds-p-horizontal_small">NATURE OF BUSINESS / DESCRIPTION OF OPERATIONS</span>
+                                        </h3>
+                                        <div aria-hidden="false" class="slds-section__content slds-p-left_medium slds-p-right_medium">
+                                            <div class="slds-grid slds-wrap">
+                                                <div class="slds-size_1-of-1">
+                                                    GIVE COMMENTS AND DESCRIPTIONS OF BUSINESS, OPERATIONS AND PRODUCTS: MANUFACTURING - RAW MATERIALS, PROCESSES, PRODUCT, EQUIPMENT; CONTRACTOR - TYPE OF WORK, SUB-CONTRACTS; MERCANTILE - MERCHANDISE, CUSTOMERS, DELIVERIES; SERVICE - TYPE, LOCATION; FARM - ACREAGE, ANIMALS, MACHINERY, SUB-CONTRACTS.
+                                                </div>
+                                                <div class="slds-size_1-of-1">
+                                                    <lightning:textarea variant="label-hidden" value="{!v.natureofBusinessDescription}"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="slds-section slds-is-open slds-p-top_small">
+                                        <h3 class="slds-section__title slds-theme_shade">
+                                            <span class="slds-truncate slds-p-horizontal_small">ACORD General Information</span>
+                                        </h3>
+                                        <div aria-hidden="false" class="slds-section__content slds-p-left_medium slds-p-right_medium">
+                                            <lightning:recordEditForm objectApiName="Submission_Requirement__c"
+                                                                      recordId="{!v.selectedRecordId}"
+                                                                      aura:id="proposalForm">
+                                                <div class="slds-grid slds-wrap">
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                1. DOES APPLICANT OWN, OPERATE OR LEASE AIRCRAFT / WATERCRAFT?
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="OWN_OPERATE_LEASE_AIRCRAFT_WATERCRAFT__c"  aura:id="OWN_OPERATE_LEASE_AIRCRAFT_WATERCRAFT" required="true"/>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                2. DO / HAVE PAST, PRESENT OR DISCONTINUED OPERATIONS INVOLVE(D) STORING, TREATING, DISCHARGING, APPLYING, DISPOSING, OR TRANSPORTING OF HAZARDOUS MATERIAL? (e.g. landfills, wastes, fuel tanks, etc)
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="DISCONTINUED_OPERATIONS_HAZARDOUS_MATER__c" aura:id="DISCONTINUED_OPERATIONS_HAZARDOUS_MATER" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                3. ANY WORK PERFORMED UNDERGROUND OR ABOVE 15 FEET?
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="WORK_PERFORMED_UNDERGROUND_OR_ABOVE_15_F__c" aura:id="WORK_PERFORMED_UNDERGROUND_OR_ABOVE_15_F" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                4. ANY WORK PERFORMED ON BARGES, VESSELS, DOCKS, BRIDGE OVER WATER?
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="WORK_PERFORMED_ON_BARGES_VESSELS_DOCKS__c" aura:id="WORK_PERFORMED_ON_BARGES_VESSELS_DOCKS" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                5. IS APPLICANT ENGAGED IN ANY OTHER TYPE OF BUSINESS?
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="ENGAGED_IN_ANY_OTHER_TYPE_OF_BUSINESS__c" aura:id="ENGAGED_IN_ANY_OTHER_TYPE_OF_BUSINESS" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                6. ARE SUB-CONTRACTORS USED? (If "YES", give % of work subcontracted)
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="SUB_CONTRACTORS_USED__c" onchange="{!c.handleChangeSUBCONTRACTORSUSED}" aura:id="SUB_CONTRACTORS_USED" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    
+                                                    <aura:if isTrue="{!v.isShowWorkSubContracted}">
+                                                        <div class="slds-size_1-of-1">
+                                                            <div class="slds-form-element">
+                                                                <label class="slds-form-element__label">
+                                                                    % of work subcontracted
+                                                                </label> 
+                                                                <lightning:inputField variant="label-hidden" fieldName="of_work_subcontracted__c" aura:id="of_work_subcontracted"/>
+                                                            </div>    
+                                                        </div>
+                                                    </aura:if>
+                                                    
+                                                    
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                7. ANY WORK SUBLET WITHOUT CERTIFICATES OF INSURANCE? (If "YES", payroll for this work must be included in the State Rating Worksheet on Page 2)
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="WORK_SUBLET_W_O_CERTIFICATES_OF_INSURANC__c" aura:id="WORK_SUBLET_W_O_CERTIFICATES_OF_INSURANC" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                8. IS A WRITTEN SAFETY PROGRAM IN OPERATION?
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="WRITTEN_SAFETY_PROGRAM_IN_OPERATION__c" aura:id="WRITTEN_SAFETY_PROGRAM_IN_OPERATION" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                9. ANY GROUP TRANSPORTATION PROVIDED?
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="GROUP_TRANSPORTATION_PROVIDED__c" aura:id="GROUP_TRANSPORTATION_PROVIDED" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                10. ANY EMPLOYEES UNDER 16 OR OVER 60 YEARS OF AGE?
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="EMPLOYEES_UNDER_16_OR_OVER_60_YEARS_OF_A__c" aura:id="EMPLOYEES_UNDER_16_OR_OVER_60_YEARS_OF_A" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                11. ANY SEASONAL EMPLOYEES?
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="SEASONAL_EMPLOYEES__c" aura:id="SEASONAL_EMPLOYEES" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                12. IS THERE ANY VOLUNTEER OR DONATED LABOR? (If "YES", please specify)
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="VOLUNTEER_OR_DONATED_LABOR__c" onchange="{!c.handleVOLUNTEERORDONATEDLABOR}" aura:id="VOLUNTEER_OR_DONATED_LABOR" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    
+                                                    <aura:if isTrue="{!v.isShowVOLUNTEER_OR_DONATED_LABOR_EXPLANATION}">
+                                                        <div class="slds-size_1-of-1">
+                                                            <div class="slds-form-element">
+                                                                <label class="slds-form-element__label">
+                                                                    Specifigy Volunterr or Donated Labor
+                                                                </label> 
+                                                                <lightning:inputField variant="label-hidden" fieldName="VOLUNTEER_OR_DONATED_LABOR_EXPLANATION__c" aura:id="VOLUNTEER_OR_DONATED_LABOR_EXPLANATION"/>
+                                                            </div>    
+                                                        </div>                                            
+                                                    </aura:if>
+                                                    
+                                                    
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                13. ANY EMPLOYEES WITH PHYSICAL HANDICAPS?
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="EMPLOYEES_WITH_PHYSICAL_HANDICAPS__c" aura:id="EMPLOYEES_WITH_PHYSICAL_HANDICAPS" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                14. DO EMPLOYEES TRAVEL OUT OF STATE? (If "YES", indicate state(s) of travel and frequency)
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="EMPLOYEES_TRAVEL_OUT_OF_STATE__c" aura:id="EMPLOYEES_TRAVEL_OUT_OF_STATE" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                Indicate state's of travel and frequenc
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="Indicate_state_s_of_travel_and_frequenc__c" aura:id="Indicate_state_s_of_travel_and_frequenc" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                15. ARE ATHLETIC TEAMS SPONSORED?
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="ATHLETIC_TEAMS_SPONSORED__c" aura:id="ATHLETIC_TEAMS_SPONSORED" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                16. ARE PHYSICALS REQUIRED AFTER OFFERS OF EMPLOYMENT ARE MADE?
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="PHYSICALS_REQUIRED_AFTER_OFFERS_OF_EMPLO__c" aura:id="PHYSICALS_REQUIRED_AFTER_OFFERS_OF_EMPLO" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                17. ANY OTHER INSURANCE WITH THIS INSURER?
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="ANY_OTHER_INSURANCE_WITH_THIS_INSURER__c" aura:id="ANY_OTHER_INSURANCE_WITH_THIS_INSURER" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                18. ANY PRIOR COVERAGE DECLINED / CANCELLED / NON-RENEWED IN THE LAST THREE (3) YEARS? (Missouri Applicants - Do not answer this question)
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="COVERAGE_DEC_CANC_NON_RENEWED_IN_LAST_3__c" aura:id="COVERAGE_DEC_CANC_NON_RENEWED_IN_LAST_3" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                19. ARE EMPLOYEE HEALTH PLANS PROVIDED?
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="EMPLOYEE_HEALTH_PLANS_PROVIDED__c" aura:id="EMPLOYEE_HEALTH_PLANS_PROVIDED" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                20. DO ANY EMPLOYEES PERFORM WORK FOR OTHER BUSINESSES OR SUBSIDIARIES?
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="EMPLOYEES_PERFORM_WORK_FOR_OTHER_BUSINES__c" aura:id="EMPLOYEES_PERFORM_WORK_FOR_OTHER_BUSINES" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                21. DO YOU LEASE EMPLOYEES TO OR FROM OTHER EMPLOYERS?
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="LEASE_EMPLOYEES_TO_OR_FROM_OTHER_EMPLOYE__c" aura:id="LEASE_EMPLOYEES_TO_OR_FROM_OTHER_EMPLOYE" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                22.  DO ANY EMPLOYEES PREDOMINANTLY WORK AT HOME? If "YES", # of Employees:    
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="EMPLOYEES_PREDOMINANTLY_WORK_AT_HOME__c" onchange="{!c.handleEMPLOYEESPREDOMINANTLYWORKATHOME}" aura:id="EMPLOYEES_PREDOMINANTLY_WORK_AT_HOME" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    
+                                                    <aura:if isTrue="{!v.isShowEmployeesWorkFromHome}">
+                                                        <div class="slds-size_1-of-1">
+                                                            <div class="slds-form-element">
+                                                                <label class="slds-form-element__label">
+                                                                    # of Employees work from home
+                                                                </label> 
+                                                                <lightning:inputField variant="label-hidden" fieldName="of_Employees_work_from_home__c" aura:id="of_Employees_work_from_home"/>
+                                                            </div>    
+                                                        </div>
+                                                    </aura:if>
+                                                    
+                                                    
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                23. ANY TAX LIENS OR BANKRUPTCY WITHIN THE LAST FIVE (5) YEARS? (If "YES", please specify)
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="TAX_LIENS_BANKRUPTCY_WITHIN_LAST_5_YRS__c" onchange="{!c.handleTAX_LIENS_BANKRUPTCY_WITHIN_LAST_5_YRS}" aura:id="TAX_LIENS_BANKRUPTCY_WITHIN_LAST_5_YRS" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    
+                                                    <aura:if isTrue="{!v.isShowSPECIFYTAXLIENSBANKRUPTCY}">
+                                                        <div class="slds-size_1-of-1">
+                                                            <div class="slds-form-element">
+                                                                <label class="slds-form-element__label">
+                                                                    Specify Tax Liens/Bankruptcy
+                                                                </label> 
+                                                                <lightning:inputField variant="label-hidden" fieldName="SPECIFY_TAX_LIENS_BANKRUPTCY__c" aura:id="SPECIFY_TAX_LIENS_BANKRUPTCY"/>
+                                                            </div>    
+                                                        </div>
+                                                    </aura:if>
+                                                    
+                                                    
+                                                    <div class="slds-size_1-of-1">
+                                                        <div class="slds-form-element">
+                                                            <label class="slds-form-element__label">
+                                                                24. ANY UNDISPUTED AND UNPAID WORKERS COMPENSATION PREMIUM DUE FROM YOU OR ANY COMMONLY MANAGED OR OWNED ENTERPRISES? IF YES, EXPLAIN INCLUDING ENTITY NAME(S) AND POLICY NUMBER(S).
+                                                            </label> 
+                                                            <lightning:inputField variant="label-hidden" fieldName="UNDISPUTED_UNPAID_WC_PREMIUM_DUE__c" onchange="{!c.handleUNDISPUTEDUNPAIDWCPREMIUMDUE}" aura:id="UNDISPUTED_UNPAID_WC_PREMIUM_DUE" required="true"/>
+                                                        </div>    
+                                                    </div>
+                                                    
+                                                    <aura:if isTrue="{!v.isShowEXPLAINUNDISPUTEDANDUNPAIDWCPREMIUM}">
+                                                        <div class="slds-size_1-of-1">
+                                                            <div class="slds-form-element">
+                                                                <label class="slds-form-element__label">
+                                                                    Explain including entity name(s) and policy number(s)
+                                                                </label> 
+                                                                <lightning:inputField variant="label-hidden" fieldName="EXPLAIN_UNDISPUTED_AND_UNPAID_WC_PREMIUM__c" aura:id="EXPLAIN_UNDISPUTED_AND_UNPAID_WC_PREMIUM"/>
+                                                            </div>    
+                                                        </div>
+                                                    </aura:if>
+                                                    
+                                                </div>
+                                            </lightning:recordEditForm>
+                                        </div>
+                                    </div>
+                                </aura:if>
+                                
+                                <!--notes-section-->
+                                <div class="slds-section slds-is-open slds-p-top_small">
+                                    <h3 class="slds-section__title slds-theme_shade">
+                                        <span class="slds-truncate slds-p-horizontal_small">Notes</span>
+                                    </h3>
+                                    <div aria-hidden="false" class="slds-section__content slds-p-left_medium slds-p-right_medium">
+                                        <div class="slds-grid slds-wrap">
+                                            <div class="slds-size_1-of-1">
+                                                <lightning:textarea label="Notes" value="{!v.submissionRequirementNotes}" aura:id="submissionRequirementNotes"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!--upload Section-->
+                                <div class="slds-section slds-is-open">
+                                    <h3 class="slds-section__title slds-theme_shade">
+                                        <span class="slds-truncate slds-p-horizontal_small">Upload File</span>
+                                    </h3>
+                                    <div aria-hidden="false" class="slds-section__content slds-p-left_medium slds-p-right_medium">
+                                        <lightning:fileUpload label="Upload Document"
+                                                              name="fileUploader"
+                                                              multiple="true"
+                                                              recordId="{!v.oSubmissionRequirement.Id}"
+                                                              onuploadfinished="{!c.handleUploadFinished}" />
+                                    </div>
+                                    
+                                </div>
+                            </aura:set>
+                        </aura:if>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleHideUploadModal}">Cancel</button>
+                        <!--<button class="slds-button slds-button_brand" type="button" disabled="{!v.isTrue}" onclick="{!c.handleSaveSubmissionDocument}">Save</button>-->
+                        <aura:if isTrue="{!v.isShowAccordSignatureRequestButton}">
+                        	<button class="slds-button slds-button_brand" type="button" onclick="{!c.handleAccordSignatureRequest}">Accord Signature Request</button>
+                        </aura:if>
+                        <aura:if isTrue="{!v.isShowGenerateACORDButton}">
+                            <button class="slds-button slds-button_brand" type="button" onclick="{!c.handleGenerateACORD}">Generate ACORD</button>
+                        </aura:if>
+                        <button class="slds-button slds-button_brand" type="button" disabled="{!v.isTrue}" onclick="{!c.handleUploadFinish}">Save and Finish</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        
+        <aura:if isTrue="{!v.isShowStateRatingModal}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_medium" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                
+                <lightning:spinner aura:id="editRatingmodalspinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+                
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.handleHideWCRateAction}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">{!v.selectedWcRateName}</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <lightning:recordEditForm recordId="{!v.selectedWcRateId}" 
+                                                  aura:id="editForm"
+                                                  objectApiName="WC_Rate__c"
+                                                  density="comfy">
+                            <lightning:messages />
+                            <div class="slds-grid slds-wrap">
+                                <div class="slds-size_1-of-2 slds-p-right_small" style="padding-top:10px;">
+                                    <lightning:select aura:id="location" required="true" value="{!v.selectedClientLocation}" name="location" label="Location">
+                                        <option value="">--None--</option>
+                                        <aura:iteration items="{!v.mapClientLocationPicklistValues}" var="ind" indexVar="index">
+                                            <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==v.selectedClientLocation}" />
+                                        </aura:iteration>
+                                    </lightning:select>
+                                </div>
+                                
+                                <div class="slds-size_1-of-2">
+                                    <aura:if isTrue="{!v.wcRateWhereClause != null &amp;&amp; v.wcRateWhereClause != undefined}">
+                                        
+                                        <c:LightningLookup sObjectName="State_Comp_Code__c"
+                                                           valueFieldName="Id"
+                                                           displayedFieldName="Code_Name_Description__c"
+                                                           label="WC Code"
+                                                           required="true"
+                                                           whereClause="{!v.wcRateWhereClause}"
+                                                           selectedValue="{!v.selectedStateCompCode}"
+                                                           svg="custom:custom39"
+                                                           aura:id="stateLookup"/>
+                                        
+                                        <aura:set attribute="else">
+                                            <c:LightningLookup sObjectName="State_Comp_Code__c"
+                                                               valueFieldName="Id"
+                                                               displayedFieldName="Code_Name_Description__c"
+                                                               label="WC Code"
+                                                               required="true"
+                                                               selectedValue="{!v.selectedStateCompCode}"
+                                                               svg="custom:custom39"
+                                                               aura:id="stateLookup"/>
+                                        </aura:set>
+                                        
+                                    </aura:if>
+                                </div>
+                                
+                                <div class="slds-size_1-of-2 slds-p-right_small">
+                                    <lightning:inputField fieldName="Part_Time_Employees__c" required="true" aura:id="PartTimeEmployees"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="of_Employees__c" required="true" aura:id="ofEmployees"/>
+                                </div>
+                                <div class="slds-size_1-of-2 slds-p-right_small">
+                                    <lightning:inputField fieldName="Gross_Wages__c" required="true" aura:id="Gross_Wages"/>
+                                </div>
+                                
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="Current_Rate__c" />
+                                </div>
+                                
+                            </div>
+                        </lightning:recordEditForm>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_brand" type="button" onclick="{!c.handleSaveWCRate}">Save</button>
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleHideWCRateAction}">Close</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        
+        <aura:if isTrue="{!v.isShowAddCompCodeListModal}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_large" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                <!--spinner-->
+                <lightning:spinner aura:id="addCompCodemodalspinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+                
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.handleHideAddWCCodeModal}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Add WC Code</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <c:PEOClientEmployeeInfoComp recordId="{!v.recordId}" isParentModal="{!v.isShowAddCompCodeListModal}"/>
+                    </div>
+                    
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        
+    </div>
+</aura:component>

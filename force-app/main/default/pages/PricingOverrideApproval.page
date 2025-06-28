@@ -1,0 +1,22 @@
+<apex:page controller="PricingOverrideApproval" standardStylesheets="true" lightningStylesheets="true" cache="false" showHeader="false">
+ 
+ <apex:sectionHeader title="Pricing Override"/>
+ 
+ <apex:form style="margin:20px;">
+  
+ <apex:outputPanel rendered="{!!hideForm}">
+ Comments:<br/>
+ <apex:inputTextarea style="width:300px;height:60px" value="{!Notes}"/>
+ <br/><br/>
+ 
+ <apex:commandButton value="APPROVE" action="{!doApprove}"/>&nbsp;&nbsp;
+ <apex:commandButton value="REJECT" action="{!doReject}"/>&nbsp;&nbsp;
+ 
+ </apex:outputPanel>
+ <br/><br/>
+  
+  <apex:pageMessages ></apex:pageMessages>
+ 
+ </apex:form>
+ 
+</apex:page>

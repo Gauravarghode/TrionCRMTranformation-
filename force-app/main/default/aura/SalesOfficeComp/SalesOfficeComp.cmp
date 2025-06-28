@@ -1,0 +1,353 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" 
+                access="global"
+                controller="SalesOfficeCompCtrl">
+	
+    <!--attribute-->
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="lstWCRates" type="List"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="sortedBy" type="String" />
+    <aura:attribute name="selectedRows" type="List"/>
+    <aura:attribute name="errors" type="Object" default="[]"/>
+    <aura:attribute name="draftValues" type="Object" default="[]"/>
+    <aura:attribute name="sortedDirection" type="Boolean" default="true" />
+    <aura:attribute name="isShowCheckboxColumn" type="Boolean" default="true"/>
+    
+    <!--edit_modal-->
+    <aura:attribute name="selectedRecordId" type="String" />
+    <aura:attribute name="selectedRecordName" type="String" />
+    <aura:attribute name="isShowEditModal" type="Boolean" default="false"/>
+    
+    <aura:attribute name="isSelectCarrier" type="Boolean" default="false"/>
+    <aura:attribute name="isCalculateRate" type="Boolean" default="false"/>
+    <aura:attribute name="isAddWCCode" type="Boolean" default="false"/>
+    <aura:attribute name="isShowSelectCarrier" type="Boolean" default="true"/>
+    
+    
+    <aura:attribute name="mapCalculateWCRateby" type="Map"/>
+    <aura:attribute name="selectedCalculateWCRateby" type="String" />
+    <aura:attribute name="modifier" type="Decimal" />
+    
+    <aura:attribute name="selectedCarrier" type="String" />
+    <aura:attribute name="mapCarrier" type="Map"/>
+    <aura:attribute name="lstPolicy" type="List"/>
+    <aura:attribute name="policyColumns" type="List"/>
+    <aura:attribute name="selectedPolicy" type="List"/>
+    <aura:attribute name="isShowPolicy" type="Boolean" default="false"/>
+    <aura:attribute name="isShowPolicyContinue" type="Boolean" default="false"/>
+    <aura:attribute name="oPolicy" type="Policy__c"/>
+    
+    <aura:attribute name="isShowAddCompCodeModal" type="Boolean" default="false"/>
+    <aura:attribute name="isShowState" type="Boolean" default="false"/>
+    <aura:attribute name="isShowWCCode" type="Boolean" default="false"/>
+    <aura:attribute name="mapStates" type="Map"/>
+    <aura:attribute name="selectedState" type="String"/>
+    
+    <aura:attribute name="lstWCCode" type="List"/>
+    <aura:attribute name="WCCodeColumns" type="List"/>
+    <aura:attribute name="sortedByWCCode" type="String" />
+    <aura:attribute name="sortedDirectionWCCode" type="Boolean" default="true" />
+    
+    <aura:attribute name="selectedStateCompCode" type="String"/>
+    <aura:attribute name="numberEmployee" type="Decimal"/>
+    <aura:attribute name="grossWage" type="Decimal"/>
+    
+    <aura:attribute name="lstMasterQuotes" type="List"/>
+    <aura:attribute name="selectedMasterQuotes" type="List"/>
+	<aura:attribute name="masterQuoteColumns" type="List"/>
+    <aura:attribute name="lstMCPStateWrapper" type="List"/>
+    
+    <aura:attribute name="isShowAddCompCodeListModal" type="Boolean" default="false" />
+    
+    <aura:attribute name="selectCarrierHeader" type="String" default="Select Carrier"/>
+    
+     <aura:attribute name="wcRateWhereClause" type="String" default=""/>
+
+     <aura:attribute name="isShowCalculateRates" type="Boolean" default="true"/>
+
+     <aura:attribute name="isShowAddWCCode" type="Boolean" default="true"/>
+    
+    <aura:attribute name="buttonvisibilitysoqlFilter" type="String"/>
+    <aura:attribute name="isButtonVisible" type="Boolean" default="true"/>
+
+    <!--handler-->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/> 
+    
+    <!--markup-->
+    <div>
+        <!--spinner-->
+        <lightning:spinner aura:id="spinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+        
+        <div class="slds-grid slds-wrap">
+            
+            <aura:if isTrue="{!!v.isSelectCarrier &amp;&amp; !v.isCalculateRate &amp;&amp; !v.isAddWCCode}">
+                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                    <aura:if isTrue="{!v.isButtonVisible}">
+                        <aura:if isTrue="{!v.isShowSelectCarrier}">
+                            <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleShowCarrier}">Select Carrier</button>
+                        </aura:if>
+                        <aura:if isTrue="{!v.isShowCalculateRates}">
+                            <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleShowCalculateRate}">Calculate Rate</button>
+                        </aura:if>
+                        <aura:if isTrue="{!v.isShowAddWCCode}">
+                            <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleShowAddCompCodeListModal}">Add WC Code</button>
+                        </aura:if>
+                    </aura:if>
+                </div>
+            </aura:if>
+
+            <aura:if isTrue="{!v.isCalculateRate}">
+                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                    <lightning:select aura:id="calculateBillRateby" value="{!v.selectedCalculateWCRateby}" name="calculateBillRateby" label="Calculate Bill Rate by" required="true">
+                        <option value="">--None--</option>
+                        <aura:iteration items="{!v.mapCalculateWCRateby}" var="ind" indexVar="index">
+                            <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==v.selectedCalculateWCRateby}" />
+                        </aura:iteration>
+                    </lightning:select>
+                </div>
+
+                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                    <lightning:input aura:id="modifier" type="number" name="modifier" label="Mod" value="{!v.modifier}" required="true"  step="0.0001"/>
+                </div>
+            </aura:if>
+            
+            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                <!--datatable-->
+                <div>
+                    <lightning:datatable columns="{! v.columns }"
+                                         aura:id="wcRate"
+                                         data="{! v.lstWCRates }"
+                                         keyField="Id"
+                                         hideCheckboxColumn="{!v.isShowCheckboxColumn}"
+                                         sortedBy="{!v.sortedBy}"
+                                         sortedDirection="{!v.sortedDirection}" 
+                                         onsort="{!c.handleColumnSorting}"
+                                         errors="{! v.errors }"
+                                         draftValues="{! v.draftValues }"
+                                         onrowselection="{!c.handleRowSelection}"
+                                         onrowaction="{! c.handleRowAction }"/>
+                </div>
+            </div>
+            
+            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                <aura:if isTrue="{!v.isCalculateRate}">
+                    <aura:if isTrue="{!v.isShowCalculateRates}">
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCalculateRates}">Calculate Rates</button>
+                    </aura:if>
+                    <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCancelCalculateRate}">Cancel</button>
+                </aura:if>
+            </div>
+        </div>
+        
+        <aura:if isTrue="{!v.isShowEditModal}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_medium" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                <!--spinner-->
+        		<lightning:spinner aura:id="modalspinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+        
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.handleCancelEditModal}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">{!v.selectedRecordName}</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <lightning:recordEditForm   recordId="{!v.selectedRecordId}" 
+                                                    objectApiName="WC_Rate__c"
+                                                    onsuccess="{!c.handleSuccessWCRateRecord}"
+                                                    onerror="{!c.handleErrorWCRateRecord}"
+                                                    aura:id="editForm">
+                            <lightning:messages />
+                            <div class="slds-grid slds-wrap">
+                                <div class="slds-size_1-of-2 slds-p-right_x-small">
+                                    <div class="slds-form-element">
+                                        <!--<label class="slds-form-element__label">Comp Code</label> 
+                                        <lightning:inputField variant="label-hidden" fieldName="State_Comp_Code__c" />-->
+                                        <aura:if isTrue="{!v.wcRateWhereClause != null &amp;&amp; v.wcRateWhereClause != undefined}">
+                                        	<c:LightningLookup sObjectName="State_Comp_Code__c"
+                                                               valueFieldName="Id"
+                                                               displayedFieldName="Code_Name_Description__c"
+                                                               label="Comp Code"
+                                                               whereClause="{!v.wcRateWhereClause}"
+                                                               selectedValue="{!v.selectedStateCompCode}"
+                                                               svg="custom:custom39"/>
+                                            <aura:set attribute="else">
+                                            	<c:LightningLookup sObjectName="State_Comp_Code__c"
+                                                                   valueFieldName="Id"
+                                                                   displayedFieldName="Code_Name_Description__c"
+                                                                   label="Comp Code"
+                                                                   selectedValue="{!v.selectedStateCompCode}"
+                                                                   svg="custom:custom39"/>
+                                            </aura:set>
+                                        </aura:if>
+                                    </div>
+                                </div>
+                                <div class="slds-size_1-of-2" style="padding-top:10px;">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label">Manual Description</label> 
+                                        <lightning:inputField variant="label-hidden" fieldName="Manual_Comp_Description__c" aura:id="Manual_Comp_Description"/>
+                                    </div>
+                                </div>
+                                <div class="slds-size_1-of-2 slds-p-right_x-small">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label">Part-Time Employees</label> 
+                                        <lightning:inputField variant="label-hidden" fieldName="Part_Time_Employees__c" aura:id="Part_Time_Employees"/>
+                                    </div>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label">Full-Time Employees</label> 
+                                        <lightning:inputField variant="label-hidden" fieldName="of_Employees__c" aura:id="of_Employees"/>
+                                    </div>
+                                </div>
+                                <div class="slds-size_1-of-2 slds-p-right_x-small">
+                                    <lightning:inputField fieldName="Gross_Wages__c" aura:id="Gross_Wages"/>
+                                </div>
+                               
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label">Manual Rate</label> 
+                                        <lightning:inputField variant="label-hidden" fieldName="Carrier_Rate__c" aura:id="Carrier_Rate"/>
+                                    </div>
+
+                                </div>
+                                
+                                 <div class="slds-size_1-of-2 slds-p-right_x-small">
+                                    <lightning:outputField fieldName="Policy__c"/>
+                                </div>
+                            </div>
+                        </lightning:recordEditForm>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCancelEditModal}">Cancel</button>
+                        <button class="slds-button slds-button_brand" type="button" onclick="{!c.handleSubmitWCRateRecord}">Save</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        
+        <aura:if isTrue="{!v.isShowAddCompCodeListModal}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_medium" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                <!--spinner-->
+        		<lightning:spinner aura:id="addCompCodemodalspinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+        
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.handleHideAddCompCodeModal}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Add WC Code</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                       	<c:PEOClientEmployeeInfoComp recordId="{!v.recordId}" isParentModal="{!v.isShowAddCompCodeListModal}"/>
+                    </div>
+                    
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        
+        <aura:if isTrue="{!v.isSelectCarrier}">
+        	<section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_medium" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                <!--spinner-->
+        		<lightning:spinner aura:id="carriermodalspinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+        
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.handleCancelCarrier}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">{!v.selectCarrierHeader}</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-top_medium slds-p-bottom_medium" id="modal-content-id-1">
+                        <div class="slds-grid slds-wrap">
+                            <aura:if isTrue="{!!v.isShowPolicy}">
+                                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small slds-p-left_medium slds-p-right_medium">
+                                    <lightning:select aura:id="carrier" value="{!v.selectedCarrier}" name="carrier" label="Carrier" required="true">
+                                        <option value="">--None--</option>
+                                        <aura:iteration items="{!v.mapCarrier}" var="ind" indexVar="index">
+                                            <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==v.selectedCarrier}" />
+                                        </aura:iteration>
+                                    </lightning:select>
+                                </div>
+                            </aura:if>
+                            <aura:if isTrue="{!v.isShowPolicy}">
+                                <aura:if isTrue="{!v.lstMasterQuotes != null 
+                                                 &amp;&amp; v.lstMasterQuotes != undefined 
+                                                 &amp;&amp; v.lstMasterQuotes.length > 0
+                                                 &amp;&amp; v.lstPolicy != null 
+                                                 &amp;&amp; v.lstPolicy != undefined 
+                                                 &amp;&amp; v.lstPolicy.length > 0}">
+                                    <div class="slds-section slds-is-open">
+                                        <h3 class="slds-section__title slds-theme_shade">
+                                            <span class="slds-truncate slds-p-horizontal_small">Master Policy</span>
+                                        </h3>
+                                        <div aria-hidden="false" class="slds-section__content">
+                                            <div class="slds-size_1-of-1 slds-p-around_medium">
+                                                <div>
+                                                    <lightning:datatable aura:id="policytable"
+                                                                         columns="{!v.policyColumns}"
+                                                                         data="{!v.lstPolicy}"
+                                                                         keyField="Id"
+                                                                         maxRowSelection="1"
+                                                                         onrowselection="{! c.updateSelectedPolicy }"/>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="slds-size_1-of-1 slds-p-around_medium">
+                                                <lightning:datatable columns="{!v.masterQuoteColumns}"
+                                                                     aura:id="masterQuote"
+                                                                     data="{!v.lstMasterQuotes}"
+                                                                     keyField="Id"
+                                                                     onrowselection="{! c.updateSelectedMasterQuotes }"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </aura:if>
+                                <aura:if isTrue="{!v.lstMCPStateWrapper != null &amp;&amp; v.lstMCPStateWrapper != undefined &amp;&amp; v.lstMCPStateWrapper.length > 0}">
+                                    <div class="slds-section slds-is-open">
+                                        <h3 class="slds-section__title slds-theme_shade">
+                                            <span class="slds-truncate slds-p-horizontal_small">MCP Policy</span>
+                                        </h3>
+                                        <div aria-hidden="false" class="slds-section__content">
+                                            <aura:iteration items="{!v.lstMCPStateWrapper}" var="oMCPStateWrapper">
+                                                <aura:if isTrue="{!oMCPStateWrapper.lstPolicy != null &amp;&amp; oMCPStateWrapper.lstPolicy != undefined &amp;&amp; oMCPStateWrapper.lstPolicy.length > 0 &amp;&amp; oMCPStateWrapper.lstSUTAQuote != null &amp;&amp; oMCPStateWrapper.lstSUTAQuote != undefined &amp;&amp; oMCPStateWrapper.lstSUTAQuote.length > 0}">
+                                                    <div class="custom-css-vertical"></div>
+                                                    <div class="slds-size_1-of-1 slds-p-around_medium">
+                                                        <c:SalesOfficeMCPPolicyComp lstPolicy="{!oMCPStateWrapper.lstPolicy}"
+                                                                                    lstSUTAQuote="{!oMCPStateWrapper.lstSUTAQuote}"
+                                                                                    selectedPolicy="{!oMCPStateWrapper.selectedPolicy}"/>
+                                                    </div>
+                                                </aura:if>
+                                            </aura:iteration>
+                                        </div>
+                                    </div>
+                                </aura:if>
+                                
+                                <aura:if isTrue="{!(v.lstMasterQuotes == null || v.lstMasterQuotes == undefined || v.lstMasterQuotes.length ==0) &amp;&amp; (v.lstMCPStateWrapper == null || v.lstMCPStateWrapper == undefined || v.lstMCPStateWrapper.length ==0)}">
+                                	<div class="slds-size_1-of-1 slds-text-heading_medium slds-text-align_center"><b>No Policy Available</b></div>
+                                </aura:if>
+                                
+                            </aura:if>
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <aura:if isTrue="{!!v.isShowPolicy}">
+                        	<button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleViewPolicies}">View Policies</button>
+                        </aura:if>
+                        <aura:if isTrue="{!v.isShowPolicy}">
+                        	<button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleAddPolicyRates}">Finish</button>
+                        </aura:if>
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCancelCarrier}">Cancel</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        
+    </div>
+</aura:component>

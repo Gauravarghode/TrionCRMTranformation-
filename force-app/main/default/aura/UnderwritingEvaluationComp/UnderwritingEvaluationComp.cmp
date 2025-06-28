@@ -1,0 +1,490 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" 
+                access="global"
+                controller="UnderwritingEvaluationCompCtrl">
+    
+    <!--attribute-->
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="selectedRecordId" type="String"/>
+    <aura:attribute name="selectRecordName" type="String"/>
+    <aura:attribute name="parentIndex" type="Integer"/>
+    
+    <aura:attribute name="oProposal" type="Proposal__c"/>
+    <aura:attribute name="lstUnderwritingEvaluationWrapper" type="List"/>
+    
+    <aura:attribute name="selectedYear" type="String"/>
+    <aura:attribute name="mapYear" type="Map"/>
+    
+    <aura:attribute name="isShowDeleteLossYear" type="boolean" default="false"/>
+    <aura:attribute name="isShowEvalutionEditModal" type="boolean" default="false"/>
+    <aura:attribute name="isShowUpdateLossYearModal" type="boolean" default="false"/>
+    <aura:attribute name="isShowAddLossYearModal" type="boolean" default="false"/>
+    <aura:attribute name="isShowAddLossModal" type="boolean" default="false"/>
+    
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="lstLossYearEvaluation" type="List"/>
+    <aura:attribute name="sortedBy" type="String" />
+    <aura:attribute name="selectedRows" type="List"/>
+    <aura:attribute name="sortedDirection" type="Boolean" default="true" />
+    
+    <aura:attribute name="buttonvisibilitysoqlFilter" type="String"/>
+    <aura:attribute name="isButtonVisible" type="Boolean" default="true"/>
+    
+    <!--handler-->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/> 
+    
+    <!--CUSTOM_CSS_DO_NOT_MODIFY-->
+    <aura:html tag="style">
+        .nohover:hover{
+        background-color:#ffffff !Important;
+        }
+        .nohover:focus{
+        background-color:#ffffff !Important;
+        }
+        .custom-scroll{
+        max-height: 300px;
+        overflow-x: overlay;
+        }
+        .slds-lookup__menu{
+        position: fixed;
+        }
+        .cthead{
+        padding-top:10px !Important;
+        padding-bottom:10px !Important;
+        }
+        table{
+        border: 1px solid lightgrey !Important;
+        }
+    </aura:html>
+    
+    <!--markup-->
+    <div>
+        <!--spinner-->
+        <lightning:spinner aura:id="spinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+        
+        <div class="slds-grid slds-wrap">
+            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                <div class="custom-scroll">
+                    <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                        <thead>
+                            <tr class="slds-line-height_reset">
+                                <th class="cthead" scope="col">
+                                    
+                                </th>
+                                <th class="cthead" scope="col">
+                                    <div class="slds-truncate" title="Year">Year</div>
+                                </th>
+                                <th class="cthead" scope="col">
+                                    <div class="slds-truncate" title="# of Claims"># of Claims</div>
+                                </th>
+                                <th class="cthead" scope="col">
+                                    <div class="slds-truncate" title="Total Reserves">Total Reserves</div>
+                                </th>
+                                <th class="cthead" scope="col">
+                                    <div class="slds-truncate" title="Total Paid">Total Paid</div>
+                                </th>
+                                <th class="cthead" scope="col">
+                                    <div class="slds-truncate" title="Total Losses">Total Losses</div>
+                                </th>
+                                <th class="cthead" scope="col">
+                                    <div class="slds-truncate" title="Excluded Losses">Excluded Losses</div>
+                                </th>
+                                <th class="cthead" scope="col">
+                                    <div class="slds-truncate" title="LDF">LDF</div>
+                                </th>
+                                <th class="cthead" scope="col">
+                                    <div class="slds-truncate" title="Developed Losses">Developed Losses</div>
+                                </th>
+                                <th class="cthead" scope="col">
+                                    <div class="slds-truncate" title="Actions">Actions</div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <aura:iteration items="{!v.lstUnderwritingEvaluationWrapper}" var="oWrapper" indexVar="index">
+                                <tr class="slds-hint-parent">
+                                    <th scope="row" style="width:5%">
+                                        <aura:if isTrue="{!oWrapper.isDelete}">
+                                            <lightning:input type="checkbox" name="input1" checked="{!oWrapper.isSelected}" variant="label-hidden" />
+                                            <aura:set attribute="else">
+                                                <lightning:buttonIcon value="{!index}" onclick="{!c.toggleLossYearRecord}" iconName="{!oWrapper.isExpaned?'utility:chevrondown':'utility:chevronright'}" />
+                                            </aura:set>
+                                        </aura:if>
+                                    </th>
+                                    <td data-label="{!oWrapper.oLossYear.Year_Name__c}">
+                                        <div class="slds-truncate" title="{!oWrapper.oLossYear.Year_Name__c}">{!oWrapper.oLossYear.Year_Name__c}</div>
+                                    </td>
+                                    <td>
+                                        <div class="slds-truncate">{!oWrapper.oLossYear.of_Claims__c}</div>
+                                    </td>
+                                    <td>
+                                        <div class="slds-truncate">
+                                            <lightning:formattedNumber value="{!oWrapper.oLossYear.Total_Reserves__c}" style="currency" currencyCode="USD"/>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="slds-truncate">
+                                            <lightning:formattedNumber value="{!oWrapper.oLossYear.Total_Paid__c}" style="currency" currencyCode="USD"/>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="slds-truncate">
+                                            <lightning:formattedNumber value="{!oWrapper.oLossYear.Total_Losses__c}" style="currency" currencyCode="USD"/>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="slds-truncate">
+                                            <lightning:formattedNumber value="{!oWrapper.oLossYear.Excluded_Losses__c}" style="currency" currencyCode="USD"/>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="slds-truncate">
+                                            {!oWrapper.oLossYear.LDF__c}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="slds-truncate">
+                                            <lightning:formattedNumber value="{!oWrapper.oLossYear.Developed_Losses__c}" style="currency" currencyCode="USD"/>
+                                        </div>
+                                    </td>
+                                    <td>
+                                    	<a href="javascript:void(0);" data-index="{!index}" onclick="{!c.handleDeleteParentLossYear}">Delete</a>
+                                    </td>
+                                </tr>
+                                <aura:if isTrue="{!oWrapper.isExpaned}">
+                                    <tr class="nohover">
+                                        <td colspan="9" class="nohover">
+                                            <div class="custom-scroll">
+                                                <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                                                    <thead>
+                                                        <tr class="slds-line-height_reset">
+                                                            <th class="cthead" scope="col">
+                                                                
+                                                            </th>
+                                                            <th class="cthead" scope="col">
+                                                                <div class="slds-truncate" title="Policy Start / End Date">Policy Start / End Date</div>
+                                                            </th>
+                                                            <th class="cthead" scope="col">
+                                                                <div class="slds-truncate" title="# of Claims"># of Claims</div>
+                                                            </th>
+                                                            <th class="cthead" scope="col">
+                                                                <div class="slds-truncate" title="Total Reserves">Total Reserves</div>
+                                                            </th>
+                                                            <th class="cthead" scope="col">
+                                                                <div class="slds-truncate" title="Total Paid">Total Paid</div>
+                                                            </th>
+                                                            <th class="cthead" scope="col">
+                                                                <div class="slds-truncate" title="Total Losses">Total Losses</div>
+                                                            </th>
+                                                            <th class="cthead" scope="col">
+                                                                <div class="slds-truncate" title="Excluded Losses">Excluded Losses</div>
+                                                            </th>
+                                                            <th class="cthead" scope="col">
+                                                                <div class="slds-truncate" title="Aged Months">Aged Months</div>
+                                                            </th>
+                                                            <th class="cthead" scope="col">
+                                                                <div class="slds-truncate" title="LDF">LDF</div>
+                                                            </th>
+                                                            <th class="cthead" scope="col">
+                                                                <div class="slds-truncate" title="Developed Losses">Developed Losses</div>
+                                                            </th>
+                                                            <th class="cthead" scope="col">
+                                                                <div class="slds-truncate" title="Valued">Valued</div>
+                                                            </th>
+                                                            <th class="cthead" scope="col">
+                                                                <div class="slds-truncate" title="Actions">Actions</div>
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <aura:if isTrue="{!oWrapper.lstLossYearEvaluationWrapper != null &amp;&amp; oWrapper.lstLossYearEvaluationWrapper != undefined &amp;&amp; oWrapper.lstLossYearEvaluationWrapper.length > 0}">
+                                                            
+                                                            <aura:iteration items="{!oWrapper.lstLossYearEvaluationWrapper}" var="oEvaluationWrapper" indexVar="evaluationIndex">
+                                                                <tr class="slds-hint-parent">
+                                                                    <th scope="row">
+                                                                        <aura:if isTrue="{!oEvaluationWrapper.isDelete}">
+                                                                            <lightning:input type="checkbox" checked="{!oEvaluationWrapper.isSelected}" variant="label-hidden" />
+                                                                        </aura:if>
+                                                                    </th>
+                                                                    
+                                                                    <td>
+                                                                        <div class="slds-truncate">
+                                                                            {!oEvaluationWrapper.oLossYearEvaluation.Policy_Start_Date__c} - {!oEvaluationWrapper.oLossYearEvaluation.Policy_End_Date__c}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!oEvaluationWrapper.oLossYearEvaluation.of_Claims__c}">
+                                                                            {!oEvaluationWrapper.oLossYearEvaluation.of_Claims__c}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!oEvaluationWrapper.oLossYearEvaluation.Total_Reserves__c}">
+                                                                            <lightning:formattedNumber value="{!oEvaluationWrapper.oLossYearEvaluation.Total_Reserves__c}" style="currency" currencyCode="USD"/>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!oEvaluationWrapper.oLossYearEvaluation.Total_Paid__c}">
+                                                                            <lightning:formattedNumber value="{!oEvaluationWrapper.oLossYearEvaluation.Total_Paid__c}" style="currency" currencyCode="USD"/>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!oEvaluationWrapper.oLossYearEvaluation.Total_Losses__c}">
+                                                                            <lightning:formattedNumber value="{!oEvaluationWrapper.oLossYearEvaluation.Total_Losses__c}" style="currency" currencyCode="USD"/>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!oEvaluationWrapper.oLossYearEvaluation.Excluded_Losses__c}">
+                                                                            <lightning:formattedNumber value="{!oEvaluationWrapper.oLossYearEvaluation.Excluded_Losses__c}" style="currency" currencyCode="USD"/>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!oEvaluationWrapper.oLossYearEvaluation.Aged_Months__c}">
+                                                                            {!oEvaluationWrapper.oLossYearEvaluation.Aged_Months__c}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!oEvaluationWrapper.oLossYearEvaluation.LDF__c}">
+                                                                            {!oEvaluationWrapper.oLossYearEvaluation.LDF__c}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!oEvaluationWrapper.oLossYearEvaluation.Developed_Losses__c}">
+                                                                            <lightning:formattedNumber value="{!oEvaluationWrapper.oLossYearEvaluation.Developed_Losses__c}" style="currency" currencyCode="USD"/>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!oEvaluationWrapper.oLossYearEvaluation.Valued__c}">
+                                                                            {!oEvaluationWrapper.oLossYearEvaluation.Valued__c}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate">
+                                                                            <a href="javascript:void(0);" data-parentIndex="{!index}" data-index="{!evaluationIndex}" data-eveId="{!oEvaluationWrapper.oLossYearEvaluation.Id}" data-eveName="{!oEvaluationWrapper.oLossYearEvaluation.Name}" onclick="{!c.handleEvalutionEdit}">Edit</a>&nbsp;|&nbsp;<a href="javascript:void(0);" data-parentIndex="{!index}" data-index="{!evaluationIndex}" data-eveId="{!oEvaluationWrapper.oLossYearEvaluation.Id}" onclick="{!c.handleEvalutionDelete}">Delete</a>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            </aura:iteration>
+                                                            
+                                                            <aura:set attribute="else">
+                                                                <tr>
+                                                                    <td colspan="10">No Records Found!</td>
+                                                                </tr>
+                                                            </aura:set>
+                                                        </aura:if>
+                                                        
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="slds-p-top_small slds-p-bottom_small">
+                                                <button class="slds-button slds-button_neutral" name="{!index}" data-index="{!index}" type="button" onclick="{!c.handleShowAddLossYearModal}">Add</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </aura:if>
+                            </aura:iteration>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="slds-p-top_small slds-p-bottom_small">
+                <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleShowNewLossYearModal}">Add</button>
+            </div>
+            
+        </div>
+        
+        <aura:if isTrue="{!v.isShowEvalutionEditModal}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_medium" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                <lightning:spinner aura:id="modalspinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" type="button" onclick="{!c.handleCancelEvalution}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Edit {!v.selectRecordName}</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <lightning:recordEditForm recordId="{!v.selectedRecordId}" 
+                                                  objectApiName="Loss_Year_Evaluation__c"
+                                                  onsuccess="{!c.handleSuccessLossYearRecord}"
+                                                  onerror="{!c.handleErrorLossYearRecord}"
+                                                  aura:id="editForm">
+                            <lightning:messages />
+                            <div class="slds-grid slds-wrap">
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="Policy_Start_Date__c"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="Policy_End_Date__c"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="of_Claims__c"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="Total_Reserves__c"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="Total_Paid__c"/>
+                                </div> 
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="Excluded_Losses__c" aura:id="Excluded_Losses_edit"/>  
+                                </div>
+                                <div class="slds-size_1-of-2"> 
+                                    <lightning:inputField fieldName="UW_Excluded_Loss_Comments__c" aura:id="UW_Excluded_Loss_Comments_edit"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="LDF__c"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="Valued__c"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="Carrier__c"/>
+                                </div>
+                            </div>
+                        </lightning:recordEditForm>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCancelEvalution}">Cancel</button>
+                        <button class="slds-button slds-button_brand" type="button" onclick="{!c.handleEditEvalutionRecord}">Save</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        
+        <aura:if isTrue="{!v.isShowAddLossYearModal}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_medium" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                <lightning:spinner aura:id="addCompCodemodalspinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" type="button" onclick="{!c.handleHideAddLossYearModal}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Create Loss Year Evaluation</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <lightning:recordEditForm objectApiName="Loss_Year_Evaluation__c"
+                                                  aura:id="createForm">
+                            <lightning:messages />
+                            <div class="slds-grid slds-wrap">
+                                <div class="slds-size_1-of-2">
+                                    <lightning:select value="{!v.selectedYear}" name="selectedYear" aura:id="selectedYear" label="Year" required="true">
+                                        <option value="">--None--</option>
+                                        <aura:iteration items="{!v.mapYear}" var="ind" indexVar="index">
+                                            <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==v.selectedYear}" />
+                                        </aura:iteration>
+                                    </lightning:select>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="Policy_Start_Date__c" required="true" aura:id="Policy_Start_Date"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="Policy_End_Date__c" required="true" aura:id="Policy_End_Date"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="of_Claims__c" required="true" aura:id="of_Claims"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="Total_Reserves__c" required="true" aura:id="Total_Reserves"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="Total_Paid__c" required="true" aura:id="Total_Paid"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="Excluded_Losses__c" aura:id="Excluded_Losses"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="UW_Excluded_Loss_Comments__c" aura:id="UW_Excluded_Loss_Comments"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="LDF__c" required="true" aura:id="LDF"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="Valued__c" required="true" aura:id="Valued"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="Carrier__c" aura:id="Carrier"/>
+                                </div>
+                            </div>
+                        </lightning:recordEditForm>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleHideAddLossYearModal}">Cancel</button>
+                        <button class="slds-button slds-button_brand" type="button" onclick="{!c.handleCreateEvalutionRecord}">Save</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        
+        <aura:if isTrue="{!v.isShowAddLossModal}">
+        	<section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_medium" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                <lightning:spinner aura:id="addEveluationmodalspinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" type="button" onclick="{!c.handleCloseNewLossYearModal}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Create Loss Year And Loss Year Evaluation</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <lightning:recordEditForm objectApiName="Loss_Year_Evaluation__c"
+                                                  aura:id="createYearForm">
+                            <lightning:messages />
+                            <div class="slds-grid slds-wrap">
+                                <div class="slds-size_1-of-2">
+                                    <lightning:select value="{!v.selectedYear}" name="selectedYear" aura:id="selectedYear" label="Year" required="true">
+                                        <option value="">--None--</option>
+                                        <aura:iteration items="{!v.mapYear}" var="ind" indexVar="index">
+                                            <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==v.selectedYear}" />
+                                        </aura:iteration>
+                                    </lightning:select>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="Policy_Start_Date__c" required="true" aura:id="Policy_Start_Date"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="Policy_End_Date__c" required="true" aura:id="Policy_End_Date"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="of_Claims__c" required="true" aura:id="of_Claims"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="Total_Reserves__c" required="true" aura:id="Total_Reserves"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="Total_Paid__c" required="true" aura:id="Total_Paid"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="Excluded_Losses__c" aura:id="Excluded_Losses_new"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="UW_Excluded_Loss_Comments__c" aura:id="UW_Excluded_Loss_Comments_new"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="LDF__c" required="true" aura:id="LDF"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="Valued__c" required="true" aura:id="Valued"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="Carrier__c" aura:id="Carrier"/>
+                                </div>
+                            </div>
+                        </lightning:recordEditForm>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCloseNewLossYearModal}">Cancel</button>
+                        <button class="slds-button slds-button_brand" type="button" onclick="{!c.handleCreateLoosYearEvalutionRecord}">Create</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        
+        
+    </div>
+</aura:component>

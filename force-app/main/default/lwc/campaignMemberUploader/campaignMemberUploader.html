@@ -1,0 +1,110 @@
+<!--
+  @description       : 
+  @author            : Sudharshan Sriram 
+  @group             : 
+  @last modified on  : 10-25-2024
+  @last modified by  : Sudharshan Sriram 
+-->
+<template>
+    <lightning-card title="Upload Contacts CSV" icon-name="custom:custom63" class="slds-var-m-around_small">
+        <div class="slds-var-m-around_small">
+            <!-- <lightning-input type="file" label="Select CSV File" accept=".csv" onchange={handleFileChange}
+                multiple="false" disabled={isLoading}>
+            </lightning-input> -->
+            
+            <div if:true={isLoading} style="height: 200px; position:relative">
+                <lightning-spinner variant="base" size="medium"></lightning-spinner>
+              </div>
+              <div if:false={isLoading}>
+                <input type="file" accept=".csv" onchange={handleFileChange} />
+            <lightning-button label="Preview CSV" onclick={handleUpload} disabled={disableUpload}></lightning-button>
+              </div>
+        </div>
+
+        <!-- Modal Popup for showing the CSV preview in the datatable -->
+        <template if:true={isModalOpen}>
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+                class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container modal_container_expand">
+                    <!-- Modal Header -->
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                            title="Close" onclick={closeModal}>
+                            <lightning-icon icon-name="utility:close" alternative-text="close" size="small"></lightning-icon>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium">CSV Data Preview</h2>
+                    </header>
+                    <!-- Modal Body -->
+                    <div class="slds-modal__content slds-p-around_medium">
+
+                        <div if:true={isLoading} style="height: 200px; position:relative">
+                            <lightning-spinner variant="base" size="medium"></lightning-spinner>
+                          </div>
+                          <div if:false={isLoading}>
+                            <lightning-datatable key-field="Email" data={contactsData} columns={columns}
+                            onrowselection={handleRowSelection} hide-checkbox-column="true"
+                            class="slds-var-m-around_xxx-small"
+                            enable-infinite-loading>
+                            <!-- show-row-number-column="true"
+                            row-number-offset="0"
+                            suppress-bottom-bar="true" -->
+                        </lightning-datatable>
+                          </div>
+                    </div>
+                    <!-- Modal Footer -->
+                    <footer class="slds-modal__footer">
+                        <lightning-button variant="neutral" label="Cancel" onclick={closeModal}  class="slds-var-m-around_xxx-small"></lightning-button>
+                        <lightning-button variant="brand" label="Insert" onclick={handleInsert}  disabled={disableInsert}  class="slds-var-m-around_xxx-small"></lightning-button>
+                        <template if:false={disableDownload}>
+                            <lightning-button label="Get Report" variant="brand" onclick={downloadCsv} class="slds-var-m-around_xxx-small" disabled={disableDownload}  title={buttonTitle} 
+                            onmouseover={handleMouseOver} 
+                            onmouseout={handleMouseOut}></lightning-button>
+                        </template>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+         <!-- Second Modal Popup after Insert -->
+         <template if:true={isSecondModalOpen}>
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-02" aria-modal="true" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <!-- Modal Header -->
+                    <header class="slds-modal__header modal_block">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={closeSecondModal}>
+                            <lightning-icon icon-name="utility:close" alternative-text="close" size="small"></lightning-icon>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-02" class="slds-text-heading_medium">Results</h2>
+                    </header>
+                    <!-- Modal Body -->
+                    <div class="slds-modal__content slds-p-around_medium modal_block">
+                        
+                        <p>Total number of contacts created and added as campaign members : {<b>{contact_Insert_count}</b>}</p>
+                        <p>Number of existing contacts added as campaign members : &emsp;&emsp;&emsp;&emsp;{<b>{contact_Ex_count}</b>} </p>
+                        <p>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;------</p>
+                        <p>Total number of campaign members created : &nbsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;{<b>{campaignmember_insert_count}</b>} </p>
+                        <p> Number of contacts who are already campaign members : {<b>{campaignmember_ex_count}</b>}</p>
+                        <p>Number of contacts that failed to be added : {<b>{contact_Error_count}</b>} </p>
+                        <p>----------------------------------------------------------------</p>
+                        <p>Total Contacts from the uploaded Csv file : {<b>{contact_Total_count}</b>}</p>
+
+
+
+
+                       <!-- <p><b>New Campaign Members Inserted </b>: {campaignmember_insert_count} </p> -->
+                       
+
+                    </div>
+                    <!-- Modal Footer -->
+                    <!-- <footer class="slds-modal__footer">
+                        <lightning-button variant="neutral" label="Close" onclick={closeSecondModal} class="slds-var-m-around_xxx-small"></lightning-button>
+                    </footer> -->
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+
+    </lightning-card>
+</template>

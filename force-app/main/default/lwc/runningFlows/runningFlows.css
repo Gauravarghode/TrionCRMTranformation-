@@ -1,0 +1,497 @@
+.button {
+    margin: 1vw;
+    background-color: #C52626;
+    color: white;
+    border-radius: 0.4rem;
+    /* padding:  1.1vw 2.1vw !important; */
+    font-size: 1.5rem;
+    /* text-decoration: none; */
+    /* display: block; */
+    /* cursor: pointer; */
+    /* position: fixed; */
+    border: none;
+    width: 12rem;
+    height: 4rem;
+    text-align: center;
+    align-content: center;
+}
+
+.submitbutton {
+    /* margin-left: inherit; */
+    background-color: #C52626;
+    color: white;
+    border-radius: 0.4rem;
+    /* padding: 0.5rem 1rem; */
+    font-size: 1.5rem;
+    border: none;
+    width: 12rem;
+    height: 4rem;
+    text-align: center;
+}
+
+.slds_align{
+text-align: center; 
+width: 1066px;
+}
+
+/* Style for the container to center it on the page */
+.checkbox-container {
+    display: grid;
+    flex-direction: column;
+    /* Ensures checkboxes stack vertically */
+    align-items: center;
+    /* Centers items horizontally */
+    /* justify-self: center; Centers items vertically */
+}
+
+/* Ensure options are displayed vertically */
+.slds-checkbox {
+    display: flex;
+    /* Aligns checkbox and label properly */
+    align-items: center;
+    /* Vertically aligns the checkbox and label */
+    width: auto;
+    /* Ensures it adjusts to the content */
+
+}
+
+/* Adjust the label and checkbox spacing */
+.slds-checkbox__label {
+    display: flex;
+    align-items: center;
+    gap: 0.5vw;
+    /* Adds spacing between the checkbox and label */
+}
+
+/* Style for the checkbox when it is checked */
+.custom-checkbox:checked+.slds-checkbox__label .slds-checkbox_faux {
+    background-color: #C52626;
+    /* Background color for the tick area */
+    border-color: white;
+    /* Border color */
+    width: 1.2vw;
+    height: 1.2vw;
+}
+
+/* Customize the tick mark */
+.custom-checkbox:checked+.slds-checkbox__label .slds-checkbox_faux:after {
+    content: "";
+    display: block;
+    width: 0.5rem;
+    height: 0.8rem;
+    border: solid white;
+    border-width: 0 0.2rem 0.2rem 0;
+    transform: rotate(35deg);
+    position: absolute;
+    top: 0rem;
+    left: 0.3rem;
+}
+
+.slds-checkbox .slds-checkbox__label .slds-form-element__label {
+    font-size: 1.5vw;
+}
+
+.like-icn {
+    --slds-c-icon-color-foreground-default: #C52626;
+     display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.dislike-icn {
+    --slds-c-icon-color-foreground-default: #C52626;
+     display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.slds-size_1-of-5 {
+    width: 15vw;
+    color: #c52626;
+    /* font-size: 1.5vw; */
+    background-color: white;
+    border-radius: 0.3rem;
+    border-color: white;
+    padding-right: 1vw;
+    padding-left: 1vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Style for the container to center it on the page */
+.radio-container {
+    display: grid;
+    flex-direction: column;
+    /* Ensures radio buttons stack vertically */
+    align-items: center;
+    /* Centers items horizontally */
+}
+
+.slds-radio {
+    display: flex;
+    align-items: center;
+    /*Vertically aligns the checkbox and label*/
+}
+
+.slds-radio__label {
+    display: flex;
+    align-items: center;
+    gap: 0.5vw;
+    /* Adds spacing between the radio button and label */
+}
+
+.custom-radio:checked {
+    background-color: #C52626;
+    /* Background color for checked state */
+    border-color: white;
+    /* Border color */
+    width: 1.2vw;
+    height: 1.2vw;
+}
+
+.radiofont {
+    font-size: 1.5vw;
+}
+
+.textfont {
+    font-size: 1.7vw;
+    /* word-wrap: break-word; 
+    word-break: break-word; 
+    overflow-wrap: break-word; 
+    white-space: normal; 
+    max-width: 100%;  */
+}
+
+.loadingtextfont {
+    /* font-size: 1.7vw;
+    color:white;
+    padding-left: 45vw;
+    position: absolute;    */
+
+    /*position: relative;*/
+    margin: auto;
+    display: block;
+    font-size: 2rem;
+    text-align: center;
+    color: white;
+}
+
+.headertextfont {
+    font-size: 3vw;
+}
+
+.feedback {
+    width: 20vw;
+    height: 10vw;
+    background-color: white;
+}
+
+.slds-size_1-of-1 {
+    /* width:52vw; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.centered-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 35vw;
+    /* Full viewport height */
+    width: 100%;
+}
+
+/* .centered-containerquestions {
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    height: -1vw; 
+    margin-left: 130PX;
+    margin-right: 130px;
+} */
+
+.centered-containerquestions {
+    display: flex;
+    flex-direction: column;
+    /* Stack questions vertically */
+    justify-content: flex-start;
+    /* Align content to the top */
+    align-items: flex-start;
+    /* Center container horizontally */
+    max-width: 1100px;
+    /* Max width of the container */
+    margin: 0 auto;
+    /* Center the container */
+    padding: 16px;
+    /* Add padding for spacing */
+    box-sizing: border-box;
+    /* overflow-wrap: break-word; */
+}
+
+.slds-card {
+    /* height: 1260px; */
+    display: flex;
+    flex-direction: column;
+    /* Stack questions vertically */
+    justify-content: flex-start;
+    /* Align content to the top */
+    align-items: flex-start;
+    /* Center container horizontally */
+    max-width: 1100px;
+    /* Max width of the container */
+    margin: 0 auto;
+    /* Center the container */
+    padding: 16px;
+    /* Add padding for spacing */
+    box-sizing: border-box;
+}
+
+.textareafont {
+    font-size: 1.5vw;
+}
+
+/* Responsive styles for mobile */
+@media screen and (max-width: 768px) {
+    .textfont {
+        font-size: 4vw;
+         /* word-wrap: break-word;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        white-space: normal; */
+    }
+
+    .headertextfont {
+        font-size: 2rem;
+    }
+
+    .feedback {
+        width: 15rem;
+        height: 10rem;
+        background-color: white;
+    }
+
+    .slds-size_1-of-1 {
+        width: 70vw;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .slds-size_1-of-5 {
+        width: 15rem;
+        color: #c52626;
+        font-size: 1.1rem;
+        background-color: white;
+        border-radius: 0.3rem;
+        border-color: white;
+        padding-right: 1vw;
+        padding-left: 1vw;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .button {
+        background-color: #C52626;
+        color: white;
+        border-radius: 0.4rem;
+        font-size: 1.2rem;
+        border: none;
+        width: 7rem;
+        height: 3rem;
+        text-align: center;
+        align-content: center;
+    }
+
+    .submitbutton {
+        background-color: #C52626;
+        color: white;
+        border-radius: 0.4rem;
+        font-size: 1.2rem;
+        border: none;
+        width: 7rem;
+        height: 3rem;
+        text-align: center;
+    }
+
+    .radiofont {
+        font-size: 1.1rem;
+    }
+
+    .slds-checkbox .slds-checkbox__label .slds-form-element__label {
+        font-size: 1.1rem;
+    }
+
+    .centered-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 180%;
+        /* Full viewport height */
+        width: 100%;
+    }
+
+    .centered-containerquestions {
+        /* display: grid;
+    justify-content: center;
+    align-items: center;
+    height: -1vw; 
+    width: 100%;
+    margin-left: 15px;
+    margin-right: 15px; */
+
+        display: flex;
+        flex-direction: column;
+        /* Stack questions vertically */
+        justify-content: flex-start;
+        /* Align content to the top */
+        align-items: flex-start;
+        /* Center container horizontally */
+        max-width: 1100px;
+        /* Max width of the container */
+        margin: 0 auto;
+        /* Center the container */
+        padding: 16px;
+        /* Add padding for spacing */
+        box-sizing: border-box;
+        /* overflow-wrap: break-word;  */
+    }
+
+    .slds_align{
+text-align: center; 
+width: 150px;
+}
+
+    .slds-card {
+        /* height: 1200px;
+    width: 350px; */
+        display: flex;
+        flex-direction: column;
+        /* Stack questions vertically */
+        justify-content: flex-start;
+        /* Align content to the top */
+        align-items: flex-start;
+        /* Center container horizontally */
+        max-width: 1100px;
+        /* Max width of the container */
+        margin: 0 auto;
+        /* Center the container */
+        padding: 16px;
+        /* Add padding for spacing */
+        box-sizing: border-box;
+    }
+
+    .textareafont {
+        font-size: 1.1rem;
+    }
+}
+
+.spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    /* top: 0;
+    left: 0; */
+    width: 100vw;
+    height: 100vh;
+    transform: translateY(-80px);
+}
+
+
+
+
+/* .slds-spinner::after, .slds-spinner::before, .slds-spinner__dot-a::after, .slds-spinner__dot-a::before, .slds-spinner__dot-b::after, .slds-spinner__dot-b::before {
+    background: red;
+} */
+
+/* .custom-spinner{
+    color: red;
+} */
+
+.backgroundInverse {
+    position: relative;
+    --lwc-brandPrimary: rgb(255 255 255);
+    height: 80px;
+}
+
+.custom-spinner .slds-spinner__dot-a,
+.custom-spinner .slds-spinner__dot-b {
+    background-color: red;
+    /* Change to any color you want */
+}
+
+
+.circle-spinner {
+    position: relative;
+    width: 60px;
+    /* Circle size */
+    height: 60px;
+    margin: auto;
+    animation: rotate 1.5s linear infinite;
+    /* Rotates the entire spinner */
+    margin-top: 15rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.dot {
+    position: absolute;
+    width: 10px;
+    /* Dot size */
+    height: 10px;
+    background-color: red;
+    /* Dot color */
+    border-radius: 50%;
+}
+
+/* Position the dots around the circle */
+.dot:nth-child(1) {
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.dot:nth-child(2) {
+    top: 25%;
+    left: 87.5%;
+    transform: translate(-50%, -50%);
+}
+
+.dot:nth-child(3) {
+    top: 75%;
+    left: 87.5%;
+    transform: translate(-50%, -50%);
+}
+
+.dot:nth-child(4) {
+    top: 100%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.dot:nth-child(5) {
+    top: 75%;
+    left: 12.5%;
+    transform: translate(-50%, -50%);
+}
+
+.dot:nth-child(6) {
+    top: 25%;
+    left: 12.5%;
+    transform: translate(-50%, -50%);
+}
+
+/* Rotate the entire spinner */
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}

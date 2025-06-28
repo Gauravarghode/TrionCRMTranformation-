@@ -1,0 +1,7 @@
+.accLabel
+{
+    --slds-c-accordion-summary-color-background : rgb(243,243,243);
+    --slds-c-accordion-summary-radius-border : 0.5rem;
+	--slds-c-accordion-sizing-border : 7px;
+	--slds-c-accordion-color-border : transparent;
+}

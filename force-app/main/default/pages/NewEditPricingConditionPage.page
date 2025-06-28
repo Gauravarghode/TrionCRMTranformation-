@@ -1,0 +1,114 @@
+<apex:page standardStylesheets="true" lightningStylesheets="true" standardController="Pricing_Condition__c" extensions="NewEditPricingConditionExtension">
+    <apex:sectionHeader subtitle="New Pricing Condition" title="Pricing Condition Edit"/>
+     <apex:form id="frm">
+        <apex:pageBlock id="pb" title="Pricing Condition Edit" mode="edit">
+            <apex:pageMessages id="msg"/>
+            <apex:pageblockSection title="Information" columns="1" collapsible="false">
+                <apex:inputField value="{!oPricingCondition.Pricing_Matrix__c}" required="true"/>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel >Object</apex:outputLabel>
+                    <apex:actionRegion >
+                        <apex:inputField value="{!oPricingCondition.Object__c}" id="Object" label="Object" required="true">
+                            <apex:actionSupport event="onchange" action="{!getFieldOptions}" status="status" reRender="Object,Field,Data_Type"  />
+                        </apex:inputField>
+                    </apex:actionRegion>
+                </apex:pageBlockSectionItem>
+                    
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel >Field</apex:outputLabel>
+                    <apex:actionRegion >
+                        <apex:outputPanel layout="block" styleClass="requiredInput">
+                            <div class="requiredBlock"></div>
+                            <apex:selectList value="{!oPricingCondition.Field__c}" id="Field" required="true" multiselect="false" size="1">
+                                <apex:selectOptions value="{!lstFieldOptions}"/>
+                                <apex:actionSupport event="onchange" action="{!getFieldType}" status="status" reRender="Field,Data_Type"/>
+                            </apex:selectList>
+                        </apex:outputPanel>
+                    </apex:actionRegion>
+                </apex:pageBlockSectionItem>
+                
+                
+                <apex:inputField value="{!oPricingCondition.Data_Type__c}" id="Data_Type" required="true"/>
+                <apex:inputField value="{!oPricingCondition.Rule_Criteria__c}" required="true"/>
+                <apex:inputField value="{!oPricingCondition.Value__c}" required="true"/>
+            </apex:pageblockSection>
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Save" action="{!doSave}" rerender="pb" status="status"/>
+                <apex:commandButton value="Save & New" action="{!doSaveAndNew}" rerender="pb" status="status"/>
+                <apex:commandButton value="Cancel" action="{!cancel}" rerender="pb" status="status" immediate="true"/>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>   
+        
+        <!-- ActionStatus -->
+        <apex:outputPanel >
+            <apex:actionstatus id="status">
+                <apex:facet name="start">
+                    <div class="waitingSearchDiv" id="el_loading1" style="background-color: #fbfbfb;height: 100%;opacity:0.65;width:100%;"> 
+                        <div class="waitingHolder" style="width: 91px;">
+                            <img class="waitingImage" src="/img/loading.gif" title="Please Wait..." />
+                            <span class="waitingDescription">Please Wait...</span>
+                        </div>
+                    </div>
+                </apex:facet>
+            </apex:actionstatus>
+        </apex:outputpanel>
+        
+        <style type="text/css">
+            .message .messageText h4 {
+               color:#ffffff !important;
+            }
+                
+            .messageTable tbody td{
+                 width: 2.5% !important;
+                 color : #ffffff !important;
+             }
+             
+             .message .messageTable .messageCell {
+                 width: 100% !important;
+                 color: white;
+             }
+             
+             .errorM3 {
+                 padding: 10px;
+                 font-size: 16px;
+                 background: #c23934 !Important;
+                 border-radius: 5px;
+                 margin: 0rem;
+                 color: #ffffff !Important;
+             }    
+             .errorM3>ul{
+                 color: #ffffff !Important;
+             }
+             
+             .infoM3 {
+                 padding: 10px;
+                 font-size: 16px;
+                 font-weight: bold;
+                 background: #8088b3;
+                 border-radius: 5px;
+                 margin: 0rem;
+                 color: white;
+             }    
+             
+             .confirmM3 {
+                 padding: 10px;
+                 font-size: 16px;
+                 font-weight: bold;
+                 background: #155a15;
+                 border-radius: 5px;
+                 margin: 0rem;
+                 color: white;
+             }  
+             
+             .warningM3 {
+                 padding: 10px;
+                 font-size: 16px;
+                 font-weight: bold;
+                 background: #f9a21f;
+                 border-radius: 5px;
+                 margin: 0rem;
+                 color: white;
+             }
+        </style>
+     </apex:form> 
+</apex:page>

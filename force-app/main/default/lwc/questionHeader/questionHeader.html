@@ -1,0 +1,246 @@
+<template>
+    <div if:true={datatypeselection01}>
+        <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-2">
+            <!-- Display Added Questions -->
+            <div if:true={questionsArray.length} class="slds-m-bottom_large">
+                <div class="slds-text-heading_small slds-m-bottom_small">Added Questions:</div>
+                <template for:each={questionsArray} for:item="question" for:index="index">
+                    <div key={question.id} class="slds-box slds-m-bottom_x-small slds-theme_default question-box">
+                        <div class="slds-grid slds-gutters slds-grid_vertical-align-center">
+                            <div class="slds-col slds-size_10-of-12">
+                                <div class="slds-text-heading_small">{question.text}</div>
+                                <div class="slds-text-body_small slds-text-color_weak">Type: {question.datatype}</div>
+                            </div>
+                            <div class="slds-col slds-size_2-of-12 slds-text-align_right">
+                                <lightning-button-icon
+                                    icon-name="utility:delete"
+                                    alternative-text="Delete"
+                                    title="Delete"
+                                    data-index={index}
+                                    onclick={handleDeleteQuestion}
+                                    variant="bare"
+                                    class="delete-button">
+                                </lightning-button-icon>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+ 
+            <!-- Question Input Fields -->
+            <div class="cont2">
+                <div class="slds-form-element slds-m-bottom_medium" style="width: 100%;">
+                    <div if:true={DateSelection}>
+                        <lightning-textarea
+                            placeholder="Enter your Question"
+                            class="question-input"
+                            value={currentQuestion}
+                            onchange={handleQuestionChange}>
+                        </lightning-textarea>
+                        <lightning-input type="date" class="slds-m-top_small" disabled></lightning-input>
+                    </div>
+                    <div if:true={TextSelection}>
+                        <lightning-textarea
+                            placeholder="Enter your question"
+                            class="question-input"
+                            value={currentQuestion}
+                            onchange={handleQuestionChange}>
+                        </lightning-textarea>
+                        <lightning-input type="text" value="text" class="slds-m-top_small" disabled></lightning-input>
+                    </div>
+                    <div if:true={LikeDislike}>
+                        <lightning-textarea
+                            placeholder="Enter your question"
+                            class="question-input"
+                            value={currentQuestion}
+                            onchange={handleQuestionChange}>
+                        </lightning-textarea>
+                        <lightning-radio-group options={booleangroup} type="radio"  value="Like/DisLike" disabled></lightning-radio-group>
+                    </div>
+
+                    <div if:true={MultiSelection}>
+                        <lightning-textarea
+                            placeholder="Describe your question..."
+                            class="question-input slds-m-bottom_medium"
+                            value={currentQuestion}
+                            onchange={handleQuestionChange}>
+                        </lightning-textarea>
+                        <div class="options-container">
+                            <template for:each={multiSelectionOptions} for:item="option" for:index="index">
+                                <div key={option.value} class="option-row slds-grid slds-gutters slds-m-bottom_x-small">
+                                    <div class="slds-col slds-size_11-of-12">
+                                        <lightning-input
+                                            type="text"
+                                            placeholder={option.placeholder}
+                                        value={option.value}
+                                        data-index={index}
+                                        onblur={handleOptionValueChange}
+                                        class="option-input"
+                                        ></lightning-input>
+                                    </div>
+                                    <div class="slds-col slds-size_1-of-12 slds-align-middle">
+                                        <button
+                                        class="slds-button slds-button_icon delete-button"
+                                        onclick={handleDeleteOption}
+                                        data-index={index}
+                                        disabled={disableDelete}>
+                                            <lightning-icon
+                                                icon-name="utility:close"
+                                                size="x-small"
+                                                alternative-text="Delete"
+                                                class="delete-icon"></lightning-icon>
+                                    </button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+ 
+                        <div class="slds-m-top_medium">
+                            <button class="add-choice-button slds-button slds-button_stretch" onclick={handleAddOption}>
+                                <lightning-icon
+                                icon-name="utility:add"
+                                size="x-small"
+                                class="add-icon slds-m-right_x-small"
+                            ></lightning-icon>
+                            Add Choice
+                            </button>
+                        </div>
+ 
+                    </div>
+                    <div if:true={stars}>
+                        <lightning-textarea
+                            placeholder="Enter your question"
+                            class="question-input"
+                            value={currentQuestion}
+                            onchange={handleQuestionChange}>
+                        </lightning-textarea>
+                        <div class="slds-p-around_medium">
+                            <div class="rating-container">
+                                <span class="star-rating">
+                                    <template for:each={ratingOptions} for:item="rating">
+                                        <span
+                                            key={rating}
+                                            class={rating.starClass}
+                                            data-rating={rating.value}>
+                                            ★
+                                        </span>
+                                    </template>
+                                </span>
+                                <div class="slds-text-body_small slds-p-top_x-small">
+                                    Rating: 0 of 5
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div if:true={PickList}>
+                        <lightning-textarea
+                        placeholder="Describe your question..."
+                        class="question-input slds-m-bottom_medium"
+                        value={currentQuestion}
+                        onchange={handleQuestionChange}>
+                    </lightning-textarea>
+                    <div class="options-container">
+                        <template for:each={PickListOptions} for:item="option" for:index="index">
+                            <div key={option.value} class="option-row slds-grid slds-gutters slds-m-bottom_x-small">
+                                <div class="slds-col slds-size_11-of-12">
+                                    <lightning-input
+                                        type="text area"
+                                        placeholder={option.placeholder}
+                                    value={option.value}
+                                    data-index={index}
+                                    onblur={handleOptionValueChange1}
+                                    class="option-input"
+                                    ></lightning-input>
+                                </div>
+                                <div class="slds-col slds-size_1-of-12 slds-align-middle">
+                                    <button
+                                    class="slds-button slds-button_icon delete-button"
+                                    onclick={handleDeleteOption1}
+                                    data-index={index}
+                                    disabled={disableDelete}>
+                                        <lightning-icon
+                                            icon-name="utility:close"
+                                            size="x-small"
+                                            alternative-text="Delete"
+                                            class="delete-icon"></lightning-icon>
+                                </button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+ 
+                    <div class="slds-m-top_medium">
+                        <button class="add-choice-button slds-button slds-button_stretch" onclick={handleAddOption1}>
+                            <lightning-icon
+                            icon-name="utility:add"
+                            size="x-small"
+                            class="add-icon slds-m-right_x-small"
+                        ></lightning-icon>
+                        Add Choice
+                        </button>
+                    </div>
+                    </div>
+                </div>
+ 
+                <!-- Add Question Button -->
+                <div class="button-container">
+                    <button class="main-button" onclick={handleAddQuestion}>
+                        <span class="button-label">Add Question</span>
+                    </button>
+                    <div class="plus-icon-container" onclick={handlePlusClick}>
+                        <lightning-icon
+                            icon-name={iconName}
+                            size="x-small"
+                            class="plus-icon">
+                        </lightning-icon>
+                    </div>
+                </div>
+            </div>
+ 
+            <!-- Datatype Selection Menu -->
+            <div if:true={datatypeselection} class="slds-m-top_medium">
+                <div class="centered-buttons">
+                    <div class="left-group">
+                        <lightning-button label="Date" icon-name="utility:event" value="Date" variant="neutral" onclick={DatatypeField}></lightning-button>
+                        <lightning-button label="Text" icon-name="utility:text" value="Text" variant="neutral" onclick={DatatypeField}></lightning-button>
+                        <lightning-button label="Rating" icon-name="utility:rating" value="Rating" variant="neutral" onclick={DatatypeField}></lightning-button>
+                        <!-- <lightning-button
+                    label="Cancel"
+                    onclick={hideModalBox}
+                    class="slds-m-right_x-small">
+                </lightning-button> -->
+                    </div>
+                    <div class="right-group">
+                        <lightning-button label="Like/Dislike" icon-name="utility:like" value="Like / Dislike" variant="neutral" onclick={DatatypeField}></lightning-button>
+                        <lightning-button label="Multiple-Selection" icon-name="utility:multi_select_checkbox" value="Multi Select" variant="neutral" onclick={DatatypeField}></lightning-button>
+                        <lightning-button label="Picklist" icon-name="utility:picklist" value="Pick List" variant="neutral" onclick={DatatypeField}></lightning-button>
+                        <!-- <lightning-button
+                    label="Finish"
+                    variant="brand"
+                    onclick={CreateQuestionRecord}
+                    disabled={isSaveDisabled}>
+                </lightning-button> -->
+                    </div>
+                    
+                </div>
+                
+        
+            </div>
+ 
+            <!-- Footer Buttons -->
+            <div class="slds-grid slds-grid_align-spread slds-m-top_large slds-align_absolute-center">
+                <lightning-button
+                    label="Cancel"
+                    onclick={hideModalBox}
+                    class="slds-m-right_x-small">
+                </lightning-button>
+                <lightning-button
+                    label="Finish"
+                    variant="brand"
+                    onclick={CreateQuestionRecord}
+                    disabled={isSaveDisabled}>
+                </lightning-button>
+            </div>
+        </div>
+    </div>
+</template>

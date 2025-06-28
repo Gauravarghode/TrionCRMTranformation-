@@ -1,0 +1,77 @@
+<apex:component >
+    <style>
+        
+        .slds-card{
+        border: none !important;
+        box-shadow: none !important;
+        }
+        
+        .slds-text-heading_small{
+        font-weight: 400 !important;
+        color: black !important;
+        }
+        
+        .emailLinksCSS{
+        font-size: 1rem;
+        line-height: 1.25;
+        font-weight: 400 !important;
+        color: rgb(0, 112, 210) !important;
+        }
+        
+        .LogoCSS{
+        
+        }
+        
+        .stripWidthCSS{
+        padding: 2%; !important; <!-- Top Strip Width CSS-->
+        }
+        
+        table#forDesign .thForDesign{
+        width: 4% !important; <!-- Left & Right Strip Width CSS-->
+        }
+        
+        .topStripCSS{
+        background-color: #111820 !important; <!-- Top Strip Color CSS-->
+        }
+        
+        .leftStripCSS{
+        background-color: #C3002F !important; <!-- Left Strip Color CSS-->
+        }
+        
+        .rightStripCSS{
+        background-color: #646569 !important; <!-- Right Strip Color CSS-->
+        }
+        
+        .stripUnderTopStripCSS{
+        margin-top: 0.3% !important;
+        margin-bottom: 0.3% !important;
+        padding: 0.3%; !important;
+        border: 1px solid black !important;
+        background-color: white !important;
+        }
+        
+        <!-- DIR_Directory VF Page CSS -->
+        .internalDirectoryHeadingCSS{
+        border: 1px solid black !important;
+        }
+        
+        .internalDirectoryHeadingLabelCSS{
+        color: black !important;
+        font-weight: bold !important;
+        padding-top: 0.5% !important;
+        padding-bottom: 0.5% !important;
+        }
+        
+        .searchBtnCSS{
+        border: 1px solid #C3002F !important;
+        background-color: #C3002F !important;
+        }
+        
+        .iconsborderRadiusCSS{
+        padding: .3rem !important;
+        border-radius: 50% !important; <!-- Circle -->
+        <!-- border-radius: 0.25rem !important; --> <!-- Rectangle -->
+        }
+        
+    </style>
+</apex:component>

@@ -1,0 +1,9 @@
+.THIS .slds-theme_shade{
+	background-color: #1b5297 !Important;
+    color: #fff !Important;
+    border-radius: 0px !Important;
+}
+
+.THIS .slds-form-element__icon{
+    display:none !Important;
+}

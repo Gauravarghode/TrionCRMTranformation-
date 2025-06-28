@@ -1,0 +1,71 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" 
+                access="global"
+                controller="StateAssessmentFeesCompCtrl">
+	<!--attribute-->
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="isIncluded" type="Boolean" default="false"/>
+    <aura:attribute name="isExcluded" type="Boolean" default="false"/>
+    
+    <aura:attribute name="isShowCheckboxColumn" type="Boolean" default="true"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="sortedBy" type="String" />
+    <aura:attribute name="selectedRows" type="List"/>
+    <aura:attribute name="lstSUTAQuotes" type="List"/>
+    <aura:attribute name="sortedDirection" type="Boolean" default="true" />
+    
+    <aura:attribute name="buttonvisibilitysoqlFilter" type="String"/>
+    <aura:attribute name="isButtonVisible" type="Boolean" default="true"/>
+    
+    <!--handler-->
+	<aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <!--markup-->
+    <div>
+        <!--spinner-->
+        <lightning:spinner aura:id="spinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+        
+        <div class="slds-grid slds-wrap">
+            <aura:if isTrue="{!v.lstSUTAQuotes != null &amp;&amp; v.lstSUTAQuotes != undefined &amp;&amp; v.lstSUTAQuotes.length > 0}">
+            	<div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small slds-text-heading_small">
+                	<b><u>State Assessment Fees and Surcharges</u></b>
+                </div>
+                
+                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+					<lightning:datatable aura:id="sutaTable"
+                                         columns="{! v.columns }"
+                                         data="{! v.lstSUTAQuotes }"
+                                         keyField="Id"
+                                         hideCheckboxColumn="{!v.isShowCheckboxColumn}"
+                                         sortedBy="{!v.sortedBy}"
+                                         sortedDirection="{!v.sortedDirection}" 
+                                         onsort="{!c.handleColumnSorting}"
+                                         onrowselection="{!c.handleRowSelection}"/>                
+                </div>
+                
+                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                    <aura:if isTrue="{!v.isShowCheckboxColumn}">
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleIncludeSurcharge}">Include Surcharge</button>
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleExcludeSurcharge}">Exclude Surcharge</button>
+                    </aura:if>
+                    
+                    <aura:if isTrue="{!v.isIncluded}">
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleUpdateIncludeSurcharge}">Save</button>
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCancelIncludeSurcharge}">Cancel</button>
+                    </aura:if>
+                    
+                    <aura:if isTrue="{!v.isExcluded}">
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleUpdateExcludeSurcharge}">Save</button>
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCancelExcludeSurcharge}">Cancel</button>
+                    </aura:if>
+                </div>
+                
+                <aura:set attribute="else">
+                    <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small slds-text-heading_small">
+                    	<b><u>Client Does Not Have Any State Assessment Fees/ Surcharges</u></b>
+                    </div>
+                </aura:set>
+                
+            </aura:if>
+        </div>
+    </div>
+</aura:component>

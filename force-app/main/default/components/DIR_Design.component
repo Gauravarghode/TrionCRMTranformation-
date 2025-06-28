@@ -1,0 +1,41 @@
+<apex:component >
+    <c:DIR_CSS />
+    <apex:form id="frm" styleClass="frmCSS">
+        <html lang="en" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <head>
+                <meta charset="utf-8" />
+                <meta http-equiv="x-ua-compatible" content="ie=edge" />
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
+                
+                <apex:slds />
+            </head>
+            <body class="slds-scope">
+                <!-- HEADER -->
+                <div class="dir-header">
+                    <div class="stripWidthCSS topStripCSS"></div>
+                    <div class="stripUnderTopStripCSS"></div>
+                </div>
+                
+                <div class="dir-container">
+                    <table id="forDesign">
+                        <tr>
+                            <th class="thForDesign stripWidthCSS leftStripCSS"></th>
+                            <td>
+                                <!-- BODY -->
+                                <div class="contentbodyCSS">
+                                    <apex:componentBody />
+                                </div>
+                            </td>
+                            <th class="thForDesign stripWidthCSS rightStripCSS"></th>
+                        </tr>
+                    </table>
+                </div>
+                
+                <!-- FOOTER -->
+                <div class="dir-footer">
+                    
+                </div>
+            </body>
+        </html>
+    </apex:form>
+</apex:component>

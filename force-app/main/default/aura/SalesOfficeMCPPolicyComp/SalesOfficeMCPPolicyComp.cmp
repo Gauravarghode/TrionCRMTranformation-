@@ -1,0 +1,31 @@
+<aura:component >
+	<!--attribute-->
+    <aura:attribute name="lstPolicy" type="List"/>
+    <aura:attribute name="lstSUTAQuote" type="List"/>
+    <aura:attribute name="selectedPolicy" type="List"/>
+    <aura:attribute name="policyColumns" type="List"/>
+    <aura:attribute name="quoteColumns" type="List"/>
+    
+    <!--handler-->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/> 
+    
+    <!--markup-->
+    <div class="slds-p-top_small slds-p-bottom_small">
+        <lightning:datatable aura:id="mcppolicytable"
+                             columns="{!v.policyColumns}"
+                             data="{!v.lstPolicy}"
+                             keyField="Id"
+                             maxRowSelection="1"
+                             onrowselection="{! c.updateSelectedPolicy }"/>
+    </div>
+    
+    <div>
+        <lightning:datatable aura:id="mcpquotetable"
+                             columns="{!v.quoteColumns}"
+                             data="{!v.lstSUTAQuote}"
+                             keyField="Id"
+                             maxRowSelection="1"
+                             hideCheckboxColumn="true"/>
+    </div>
+    
+</aura:component>

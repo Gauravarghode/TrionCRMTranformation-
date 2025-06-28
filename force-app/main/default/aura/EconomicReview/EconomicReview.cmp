@@ -1,0 +1,4 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,force:hasRecordId" >
+<aura:attribute name="recordId" type="Id" />
+<div class="slds-box slds-theme_default"> <iframe src="{!'/apex/EconomicReview?id='+v.recordId}" width="100%" height="250px;" frameBorder="0"/> </div>
+</aura:component>

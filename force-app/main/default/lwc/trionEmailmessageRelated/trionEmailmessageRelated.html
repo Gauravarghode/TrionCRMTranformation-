@@ -1,0 +1,115 @@
+<template>
+    <div class="slds-tabs_default slds-tabs_card slds-tabs_medium">
+<ul class="slds-tabs_default__nav" role="tablist">
+<li class="slds-tabs_default__item slds-is-active" title="Related" role="presentation">
+<a class="slds-tabs_default__link" href="#" role="tab" tabindex="0" aria-selected="true" aria-controls="tab-default-1" id="tab-default-1__item">Related </a>
+</li>
+</ul>
+<div id="tab-default-1" class="slds-tabs_default__content slds-show" role="tabpanel" aria-labelledby="tab-default-1__item">
+
+<c-file-preview></c-file-preview>
+
+<div class="slds-card slds-card_boundary">
+      <div class="slds-card__header slds-grid slds-page-header">
+          <header class="slds-media slds-media_center slds-has-flexi-truncate slds-border_bottom">
+            <!-- <article class="slds-box "> -->
+            <div class="slds-media__figure slds-m-vertical_small slds-list_horizontal">
+                <div class="slds-p-right_small">
+                    <lightning-icon icon-name="standard:file" alternative-text="Attachments" size="small"></lightning-icon>
+                </div>
+            <h2 class="slds-card__header-title">
+                <span>Attachments ({attachmentsCounter})</span>
+            </h2>
+            </div>
+            <!-- </article> -->
+            </header>
+        </div>
+        
+      <div class="slds-card__body slds-card__body_inner">
+                     <div class="slds-p-around_small lgc-bg">
+                         <template lwc:if={hasAttachments}>
+                            <ul class="slds-has-dividers_bottom-space">
+                            <template for:each={filesArray} for:item="file">
+                                <li class="slds-item" key={file.eTag}>
+                                    <div class="slds-float_left">
+                                        <lightning-avatar fallback-icon-name={file.fileIcon} alternative-text="See Preview" ></lightning-avatar>
+                                    </div>
+                                    <div class="slds-m-left_small">
+                                        <a data-id={file.eTag} onclick={openPreview}>{file.name}</a>
+                                        <ul class="slds-list_horizontal slds-has-dividers_right">
+                                            <li class="slds-item">{file.createdDateTime}</li>
+                                            <li class="slds-item">{file.size}</li>
+                                            <li class="slds-item">{file.fileExtension}</li>
+                                        </ul>
+                                    </div>
+                                </li>
+                                </template>
+
+                                <!-- <li class="slds-item">
+                                    <lightning-tile label="File 2.csv" href="/clark.html" type="media">
+                                        <lightning-avatar slot="media" src="assets/icons/utility-sprite/svg/symbols.svg#announcement" fallback-icon-name="standard:person_account" alternative-text=""></lightning-avatar>
+                                        <ul class="slds-list_horizontal slds-has-dividers_right">
+                                            <li class="slds-item">22/2/2</li>
+                                            <li class="slds-item">50Kb</li>
+                                            <li class="slds-item">csv</li>
+                                        </ul>
+                                    </lightning-tile>
+                                </li>
+                                <li class="slds-item">
+                                    <lightning-tile label="Item3.docx" href="/diana.html" type="media">
+                                        <lightning-avatar slot="media" src="assets/icons/utility-sprite/svg/symbols.svg#announcement" fallback-icon-name="standard:person_account" alternative-text=""></lightning-avatar>
+                                        <ul class="slds-list_horizontal slds-has-dividers_right">
+                                            <li class="slds-item">02/2/2</li>
+                                            <li class="slds-item">5Kb</li>
+                                            <li class="slds-item">docx</li>
+                                        </ul>
+                                    </lightning-tile>
+                                </li> -->
+
+                            </ul>
+                        </template>
+                        <template lwc:else>
+                            <p>No Attachments found.</p>
+                        </template>
+        </div>
+    </div>   <footer class="slds-card__footer">
+        <a class="slds-card__footer-action" onclick={showAllFiles}>View All
+          <span class="slds-assistive-text">Attachments</span>
+        </a>
+      </footer>      
+        </div>
+  <article class="slds-card slds-card_boundary">
+    <div class="slds-card__header slds-grid slds-page-header lgc-bg">
+        <header class="slds-media slds-media_center slds-has-flexi-truncate slds-border_bottom">
+            <span class="slds-icon_container slds-icon-custom-custom101 slds-icon slds-icon_small" title="Related" style="border-radius: 0.125rem; margin-right: 0;">
+                <div class="slds-is-absolute slds-m-top_xx-small slds-m-left_xx-small ">
+                <lightning-icon icon-name="utility:relate" alternative-text="Related" size = "x-small" variant="inverse"></lightning-icon>
+                </div>
+            </span>
+            <div class="slds-media__body slds-page-header lgc-bg ">
+                <h2 class="slds-card__header-title">
+                    <a href="#" class="slds-card__header-link slds-truncate" title="Card Header">
+                        <span>Related To</span>
+                    </a>
+                </h2>
+            </div>
+        </header>
+    </div>
+  <div class="slds-card__body slds-card__body_inner slds-grid">
+    <div class="slds-shrink-none">
+        <lightning-icon icon-name="standard:case" alternative-text="Case" size="small" style="border-radius: 0.125rem;"></lightning-icon>
+    </div>
+    <template if:true={caseDetails}>
+        <div class="slds-col slds-grow slds-p-left_small">
+            <a onclick={openCaseRecord} class="slds-block">{caseDetails.CaseNumber}</a>
+            <p class="slds-m-top_xx-small">Case</p>
+        </div>
+    </template>
+</div>
+
+
+    </article>
+    </div>
+</div>
+
+</template>

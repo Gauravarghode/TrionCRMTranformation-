@@ -1,0 +1,118 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" 
+                access="global"
+                controller="ClientEmployeeInfoCompCtrl">
+	<!--attribute-->
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="sObjectName" type="String" />
+    <aura:attribute name="opp" type="Opportunity"/>
+    <aura:attribute name="oProposal" type="Proposal__c"/>
+    <aura:attribute name="isShowCheckboxColumn" type="Boolean" default="true"/>
+    <aura:attribute name="isAddEmployeeInfoModal" type="Boolean" default="false"/>
+	<aura:attribute name="isDelete" type="Boolean" default="false"/>
+    <aura:attribute name="mapStateOptions" type="Map"/>
+    <aura:attribute name="selectedStateId" type="String"/>
+    <aura:attribute name="numberOfEmployees" type="Decimal"/>
+    <aura:attribute name="grossWages" type="Decimal"/>
+    
+    
+    <aura:attribute name="lstSUTAQuotes" type="List"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="sortedBy" type="String" />
+    <aura:attribute name="selectedRows" type="List"/>
+    <aura:attribute name="errors" type="Object" default="[]"/>
+    <aura:attribute name="draftValues" type="Object" default="[]"/>
+    <aura:attribute name="sortedDirection" type="Boolean" default="true" />
+    
+    <aura:attribute name="buttonvisibilitysoqlFilter" type="String"/>
+    <aura:attribute name="isButtonVisible" type="Boolean" default="true"/>
+    
+    <!--handler-->
+     <aura:handler name="init" value="{!this}" action="{!c.doInit}"/> 
+    
+    <!--markup-->
+    <div>
+        <!--spinner-->
+        <lightning:spinner aura:id="spinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+        
+        <div class="slds-grid slds-wrap">
+            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+            	<b>{!v.oProposal.Client__c} Employee Info by State</b>
+            </div>
+            
+            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+				<!--datatable-->
+                <div class="slds-size_1-of-1" style="height: 250px">
+                    <lightning:datatable aura:id="quoteTable"
+                                         columns="{! v.columns }"
+                                         data="{! v.lstSUTAQuotes }"
+                                         keyField="Id"
+                                         hideCheckboxColumn="{!v.isShowCheckboxColumn}"
+                                         sortedBy="{!v.sortedBy}"
+                                         sortedDirection="{!v.sortedDirection}" 
+                                         onsort="{!c.handleColumnSorting}"
+                                         errors="{! v.errors }"
+                                         draftValues="{! v.draftValues }"
+                                         onrowselection="{!c.handleRowSelection}"
+                                         onsave="{! c.handleSaveEdition }"
+                                         oncancel="{! c.handleCancel }"/>
+                </div>
+            </div>
+            
+            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                <!--<aura:if isTrue="{!v.oProposal.Opportunity__r.StageName == 'Prospecting' || v.oProposal.Opportunity__r.StageName == 'Qualification' || v.oProposal.Opportunity__r.StageName == 'Additional Info Requested' || v.oProposal.Opportunity__r.StageName == 'Negotiation'}">-->
+                    <aura:if isTrue="{!v.isButtonVisible}">
+                        <aura:if isTrue="{!!v.isDelete}">
+                            <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleAddRecods}">Add</button>
+                            <button class="slds-button slds-button_neutral ml25" type="button" onclick="{!c.handleDeleteRecords}">Delete</button>
+                        </aura:if>
+                        <aura:if isTrue="{!v.isDelete}">
+                            <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handlePerformDeleteRecords}">Delete</button>
+                            <button class="slds-button slds-button_neutral ml25" type="button" onclick="{!c.handleCancel}">Cancel</button>
+                        </aura:if>
+                    </aura:if>
+                <!--</aura:if>-->
+            </div>
+        </div>
+        
+        <aura:if isTrue="{!v.isAddEmployeeInfoModal}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_large" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                <div class="slds-modal__container">
+                     <!--spinner-->
+        			<lightning:spinner aura:id="modalspinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.handleCancel}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Add Client Employee Info</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <div class="slds-grid slds-wrap">
+                            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                <c:LightningLookup sObjectName="State__c"
+                                                   valueFieldName="Id"
+                                                   displayedFieldName="Name"
+                                                   label="State"
+                                                   selectedValue="{!v.selectedStateId}"
+                                                   required="true"
+                                                   svg="custom:custom39"/>
+                            </div>
+                            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                            	<lightning:input type="number" aura:id="numberOfEmployees" name="numberOfEmployees" label="# of Employees" value="{!v.numberOfEmployees}" required="true"/>
+                            </div>
+                            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                            	<lightning:input type="number" aura:id="grossWages" name="grossWages" label="Gross Wages" value="{!v.grossWages}" formatter="currency" step="0.01" required="true"/>
+                            </div>
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCancel}">Cancel</button>
+                        <button class="slds-button slds-button_brand" type="button" onclick="{!c.handleAddClientEmployeeInfo}">Save</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        
+    </div>    
+</aura:component>

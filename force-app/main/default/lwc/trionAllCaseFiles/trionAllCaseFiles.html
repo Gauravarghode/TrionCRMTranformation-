@@ -1,0 +1,137 @@
+<template> 
+<article class = 'slds-card'>
+    <div class="slds-m-left_medium slds-m-top_medium">
+        <p> <a onclick={openCaseList}>Case</a> >  <a onclick={openCaseRecord}>{caseRecord.CaseNumber}</a></p>
+        
+        <p class="slds-page-header__title ">Files</p> <br/>
+        <p>{fileCounter} items</p>
+        
+    </div>
+        <div class="slds-table_edit_container slds-is-relative">
+        <table aria-multiselectable="true" class="slds-table slds-no-cell-focus slds-table_bordered slds-table_edit slds-table_fixed-layout slds-table_resizable-cols" role="grid" >
+            <thead>
+            <tr class="slds-line-height_reset">
+
+                <th aria-sort="none" class="slds-is-resizable slds-is-sortable" scope="col" style="width:1.75rem">
+                    <span class="slds-assistive-text">Sort by: </span>
+                    <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                        <!-- <span class="slds-truncate" title={email.serial}>{email.serial}</span> -->
+                    </div>
+                </th>
+
+                <th aria-sort="none" class="slds-is-resizable slds-is-sortable" scope="col">
+                    <span class="slds-assistive-text">Sort by: </span>
+                    <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                        <span class="slds-truncate" title="Title">Title</span>
+                    </div>
+                </th>
+
+                <!-- <th aria-sort="none" class="slds-is-resizable slds-is-sortable" scope="col">
+                    <span class="slds-assistive-text">Sort by: </span>
+                    <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                        <span class="slds-truncate" title="Owner">Owner</span>
+                    </div>
+                </th> -->
+
+                <th aria-sort="none" class="slds-is-resizable slds-is-sortable" scope="col">
+                    <span class="slds-assistive-text">Sort by: </span>
+                    <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                        <span class="slds-truncate" title="Last Modified">Last Modified</span>
+                    </div>
+                </th>
+
+                <th aria-sort="none" class="slds-is-resizable slds-is-sortable" scope="col">
+                    <span class="slds-assistive-text">Sort by: </span>
+                    <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                        <span class="slds-truncate" title="Size">Size</span>
+                    </div>
+                    <!-- <div class="slds-resizable">
+                        <span class="slds-resizable__handle">
+                        <span class="slds-resizable__divider"></span>
+                        </span>
+                    </div> -->
+                </th>
+
+            </tr>
+            </thead>
+            <tbody>
+                <template if:false={showFiles}>
+                    <br/>
+                    <div>
+                    <lightning-spinner alternative-text="Loading Data from SharePoint"></lightning-spinner>
+                    </div><br/>
+                </template>
+
+                <template if:true={showFiles}>
+                    <template for:each={filesList} for:item="file">
+                    <tr aria-selected="false" class="slds-hint-parent" key={file.fileId}>
+                        <td role="gridcell">
+                            <span class="slds-grid slds-grid_align-spread">
+                                <span class="slds-truncate" title=""></span>
+                            </span>
+                        </td>
+
+                        <td role="gridcell">
+                        <span class="slds-grid slds-grid_align-spread">
+                            <span class="slds-truncate" title="Title">
+                                <lightning-avatar fallback-icon-name={file.fileIcon} class="slds-m-right_small"></lightning-avatar>
+                                
+                                <a onclick={openPreview} data-id={file.fileId}>{file.name}</a>
+                            </span>
+                        </span>
+                        </td>
+
+                        <!-- <td role="gridcell">
+                        <span class="slds-grid slds-grid_align-spread">
+                            <span class="slds-truncate" title="Owner">{email.Owner}</span>
+                        </span>
+                        </td> -->
+
+                        <td role="gridcell">
+                        <span class="slds-grid slds-grid_align-spread">
+                            <span class="slds-truncate" title="Last Modified">{file.createdDateTime}</span>
+                        </span>
+                        </td>
+
+                        <td role="gridcell">
+                        <span class="slds-grid slds-grid_align-spread">
+                            <span class="slds-truncate" title="Size">{file.size}</span>
+                        </span>
+                        </td>
+
+                       <!-- <td class="slds-cell-edit" role="gridcell">
+                             <div class="slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open">
+                                <button class="slds-button slds-button_icon slds-button_icon-border-filled slds-button_icon-x-small" aria-haspopup="true" tabindex="-1" title="Delete this file."  
+                                        onclick={handleActionMenu} data-id={file.fileId}>
+                                    <lightning-icon icon-name="utility:down" size="xx-small" ></lightning-icon>
+                                    <span class="slds-assistive-text">More actions for this Email</span>
+                                </button>
+                                <template if:true={file.showAction}>
+                                    <div class="slds-dropdown slds-dropdown_left slds-dropdown_actions">
+                                        <ul class="slds-dropdown__list" role="menu" aria-label="Show More">
+                                        <li class="slds-dropdown__item" role="presentation">
+                                            <a onclick={handleFileDelete} role="menuitem" data-id={file.fileId}>
+                                            <span class="slds-truncate" title="Delete">Delete</span>
+                                            </a>
+                                        </li>
+                                        </ul>
+                                    </div>
+                                </template>
+                                
+                            </div> 
+                            <div class="slds-p-around_xx-small">
+                                <lightning-button-menu alternative-text="Show menu" menu-alignment="auto" icon-size="x-small">
+                                    <lightning-menu-item value="Delete" label="Delete" icon-name="utility:delete" onclick={handleFileDelete}></lightning-menu-item>
+                                    
+                                </lightning-button-menu>
+                            </div> 
+                        </td>-->
+                    </tr>
+                </template>
+            </template>
+            </tbody>
+        </table>
+        </div>
+    </article>
+    <c-file-preview></c-file-preview>
+</template>

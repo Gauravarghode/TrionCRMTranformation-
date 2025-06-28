@@ -1,0 +1,469 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" 
+                access="global"
+                controller="ClientContactsCompCtrl">
+    <!--attribute-->
+    <aura:attribute name="opp" type="Opportunity"/>
+    <aura:attribute name="oClientLocation" type="Client_Location__c"/>
+    <aura:attribute name="oClientContact" type="Client_Contact__c"/>
+    <aura:attribute name="oProposal" type="Proposal__c"/>
+    
+    <aura:attribute name="isContactInformation" type="Boolean" default="false"/>
+    <aura:attribute name="isShowAddModal" type="Boolean" default="false"/>
+    <aura:attribute name="isShowMobilePhone" type="Boolean" default="false"/>
+    <aura:attribute name="isIncluded" type="Boolean" default="false"/>
+    <aura:attribute name="isPrimary" type="Boolean" default="false"/>
+    <aura:attribute name="isEdit" type="Boolean" default="false"/>
+    <aura:attribute name="isRecordEdit" type="Boolean" default="false"/>
+    <aura:attribute name="isView" type="Boolean" default="false"/>
+    <aura:attribute name="isDelete" type="Boolean" default="false"/>
+    <aura:attribute name="isNewClientLocation" type="Boolean" default="false"/>
+    <aura:attribute name="isSubmissionDocument" type="Boolean" default="false"/>
+    <aura:attribute name="selectedRecordId" type="String" />
+    <aura:attribute name="selectedRecordName" type="String" />
+    
+    <aura:attribute name="oClinetContactWrapper" type="ClinetContactWrapper"/>
+    <aura:attribute name="mapStatePicklistValues" type="Map"/>
+    <aura:attribute name="mapClientLocationPicklistValues" type="Map"/>
+    <aura:attribute name="wcRateWhereClause" type="String" />
+    
+    <aura:attribute name="isHideCheckboxColumn" type="Boolean" default="true"/>
+    <aura:attribute name="clientContactsWhereClause" type="String" />
+    <aura:attribute name="lstClientContacts" type="List"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="sortedBy" type="String" />
+    <aura:attribute name="selectedRows" type="List"/>
+    <aura:attribute name="errors" type="Object" default="[]"/>
+    <aura:attribute name="draftValues" type="Object" default="[]"/>
+    <aura:attribute name="sortedDirection" type="Boolean" default="true" />
+    <aura:attribute name="isTerritorialRating" type="Boolean" default="false"/>
+    
+    <aura:attribute name="mapType" type="Map"/>
+    <aura:attribute name="sObjectName" type="String"/>
+    
+    <aura:attribute name="buttonvisibilitysoqlFilter" type="String"/>
+    <aura:attribute name="isButtonVisible" type="Boolean" default="true"/>
+    
+    <!--handler-->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/> 
+    
+    <!--markup-->
+    <div>
+        <!--spinner-->
+        <lightning:spinner aura:id="spinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+        
+        <div class="slds-grid slds-wrap">
+            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                <!--datatable-->
+                <div class="slds-size_1-of-1">
+                    <lightning:datatable aura:id="clientTable"
+                                         columns="{! v.columns }"
+                                         data="{! v.lstClientContacts }"
+                                         keyField="Id"
+                                         hideCheckboxColumn="{!v.isHideCheckboxColumn}"
+                                         sortedBy="{!v.sortedBy}"
+                                         sortedDirection="{!v.sortedDirection}" 
+                                         onsort="{!c.handleColumnSorting}"
+                                         errors="{! v.errors }"
+                                         draftValues="{! v.draftValues }"
+                                         onrowselection="{!c.handleRowSelection}"
+                                         onrowaction="{! c.handleRowAction }"
+                                         onsave="{! c.handleSaveEdition }"
+                                         oncancel="{! c.handleCancel }"/>
+                </div>
+            </div>
+            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                <!--<aura:if isTrue="{!v.isEdit}">
+                 <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCancelEdit}">Cancel</button>
+                </aura:if>
+                <aura:if isTrue="{!v.isDelete}">
+                 <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleDoDelete}">Delete</button>
+                    <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCancelDelete}">Cancel</button>
+                </aura:if>-->
+                <aura:if isTrue="{!!v.isEdit &amp;&amp; !v.isDelete &amp;&amp; v.isButtonVisible}">
+                    <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleShowMdal}">Add</button>
+                    <!--<button class="slds-button slds-button_neutral slds-m-left_small ml20" type="button" onclick="{!c.handleEnableEdit}">Edit</button>
+                    <button class="slds-button slds-button_neutral slds-m-left_small ml20" type="button" onclick="{!c.handleEnableDelete}">Delete</button>-->
+                </aura:if>
+                
+            </div>
+        </div>
+        
+        <aura:if isTrue="{!v.isShowAddModal}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_medium" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                <!--spinner-->
+                <lightning:spinner aura:id="modalspinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+                
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.handleCloseMdal}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Add Client Contact</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <div class="slds-grid slds-wrap">
+                            <div class="slds-size_1-of-1">
+                                <lightning:select aura:id="clientContactType" name="clientContactType" value="{!v.oClinetContactWrapper.clientContactType}" label="Type" required="true" onchange="{!c.handleClientContactTypeChange}">
+                                    <option value="">--None--</option>
+                                    <aura:iteration items="{!v.mapType}" var="ind" indexVar="index">
+                                        <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==v.oProposal.Administrative_Fee_Type__c}" />
+                                    </aura:iteration>
+                                </lightning:select>
+                            </div>
+                            <div class="slds-size_1-of-2 slds-p-right_small">
+                                <lightning:input type="checkbox" label="Officer/Owner" checked="{!v.isIncluded}" onchange="{!c.handlePrimaryIncludeChange}" variant="label-stacked"/>
+                            </div>
+                            <div class="slds-size_1-of-2">
+                                <lightning:input type="checkbox" label="Primary" checked="{!v.isPrimary}" onchange="{!c.handlePrimaryIncludeChange}" variant="label-stacked"/>
+                            </div>
+                            
+                            <div class="slds-size_1-of-2 slds-p-right_small">
+                                <lightning:input label="First Name" aura:id="firstname" required="true" value="{!v.oClinetContactWrapper.firstName}"/>
+                            </div>
+                            <div class="slds-size_1-of-2">
+                                <lightning:input label="Last Name" aura:id="lastname" required="true" value="{!v.oClinetContactWrapper.lastName}"/>
+                            </div>
+                            <div class="slds-size_1-of-2 slds-p-right_small">
+                                <lightning:input label="Title/Relationship" aura:id="title" required="true" value="{!v.oClinetContactWrapper.titleRelationship}"/>
+                            </div>
+                            <div class="slds-size_1-of-2">
+                                <lightning:input label="Email" type="email" value="{!v.oClinetContactWrapper.email}"/>
+                            </div>
+                            <div class="slds-size_1-of-2 slds-p-right_small">
+                                <lightning:input label="Phone" type="tel" value="{!v.oClinetContactWrapper.phone}"/>
+                            </div>
+                            
+                            <aura:if isTrue="{!v.isShowMobilePhone}">
+                                <div class="slds-size_1-of-2">
+                                    <lightning:input label="Mobile Phone" type="tel" value="{!v.oClinetContactWrapper.mobilePhone}"/>
+                                </div>
+                            </aura:if>
+                            
+                            <aura:if isTrue="{!v.isIncluded}">
+                                <div class="{!(v.isShowMobilePhone?'slds-size_1-of-2 slds-p-right_small':'slds-size_1-of-2')}">
+                                    <lightning:input type="date" name="date" label="Birthdate" value="{!v.oClinetContactWrapper.birthdate}"/>
+                                </div>
+                                
+                                <div class="{!(v.isShowMobilePhone?'slds-size_1-of-2':'slds-size_1-of-2 slds-p-right_small')}">
+                                    <lightning:input label="Ownership %" aura:id="ownership" required="true" type="number" formatter="percent-fixed" step="0.01" value="{!v.oClinetContactWrapper.ownership}"/>
+                                </div>
+                                <div class="{!(v.isShowMobilePhone?'slds-size_1-of-2 slds-p-right_small':'slds-size_1-of-2')}">
+                                    <lightning:select aura:id="state" required="true" value="{!v.oClinetContactWrapper.selectedState}" name="state" label="State" onchange="{!c.handleStateChange}">
+                                        <option value="">--None--</option>
+                                        <aura:iteration items="{!v.mapStatePicklistValues}" var="ind" indexVar="index">
+                                            <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==v.oClinetContactWrapper.selectedState}" />
+                                        </aura:iteration>
+                                    </lightning:select>
+                                </div>
+                                <div class="{!(v.isShowMobilePhone?'slds-size_1-of-2':'slds-size_1-of-2 slds-p-right_small')}">
+                                    <lightning:input label="Payroll" aura:id="payroll" required="true" value="{!v.oClinetContactWrapper.payroll}" type="number" formatter="currency" step="0.01"/>
+                                </div>
+                                <div class="{!(v.isShowMobilePhone?'slds-size_1-of-2 slds-p-right_small':'slds-size_1-of-2')}" style="{!(v.isShowMobilePhone?'padding-top: 15px;':'')}">
+                                    <div class="slds-grid slds-wrap">
+                                        <div class="slds-size_6-of-7">
+                                            <lightning:select aura:id="location" required="true" value="{!v.oClinetContactWrapper.selectedClientLocation}" name="location" label="Location" onchange="{!c.handleLocationChange}">
+                                                <option value="">--None--</option>
+                                                <aura:iteration items="{!v.mapClientLocationPicklistValues}" var="ind" indexVar="index">
+                                                    <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==v.oClinetContactWrapper.selectedClientLocation}" />
+                                                </aura:iteration>
+                                            </lightning:select>
+                                        </div>
+                                        <div class="slds-size_1-of-7 slds-text-align_right slds-p-top_large">
+                                            <lightning:buttonIcon iconName="utility:add" alternativeText="add" title="add" onclick="{!c.handleNewLocation}"/>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                                <div class="{!(v.isShowMobilePhone?'slds-size_1-of-2':'slds-size_1-of-2 slds-p-right_small')}">
+                                    <c:LightningLookup sObjectName="WC_Code__c"
+                                                       valueFieldName="Id"
+                                                       displayedFieldName="Name"
+                                                       label="WC Code"
+                                                       required="true"
+                                                       selectedValue="{!v.oClinetContactWrapper.selectedStampCode}"
+                                                       svg="custom:custom39"/>
+                                </div>
+                                <div class="{!(v.isShowMobilePhone?'slds-size_1-of-2 slds-p-right_small':'slds-size_1-of-2')}" style="{!(v.isShowMobilePhone?'':'padding-top: 15px;')}">
+                                    <div class="slds-form-element slds-form-element_edit slds-form-element_readonly slds-hint-parent">
+                                        <span class="slds-form-element__label">Client Location</span>
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-form-element__static">
+                                                <aura:unescapedHtml value="{!v.oClinetContactWrapper.clientLocation}"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="{!(v.isShowMobilePhone?'slds-size_1-of-2':'slds-size_1-of-2 slds-p-right_small')}">
+                                    <lightning:textarea name="duties" label="Duties" value="{!v.oClinetContactWrapper.duties}"/>
+                                </div>
+                            </aura:if>
+                            
+                            
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCloseMdal}">Cancel</button>
+                        <button class="slds-button slds-button_brand" type="button" onclick="{!c.handleSubmitAddClinetContact}">Save</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        
+        <aura:if isTrue="{!v.isNewClientLocation}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_large" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                <!--spinner-->
+                <lightning:spinner aura:id="newmodalspinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+                
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.handleCloseNewLocationModal}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">New Client Location - {!v.oClientLocation.Loc__c}</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <div class="slds-grid slds-wrap">
+                            <div class="slds-size_1-of-2 slds-p-right_small">
+                                <lightning:input type="number" name="input1" label="Loc #" value="{!v.oClientLocation.Loc__c}" disabled="true"/>
+                            </div>
+                            <div class="slds-size_1-of-2">
+                                <lightning:input name="street" label="Street" value="{!v.oClientLocation.Street__c}" aura:id="street" required="true"/>
+                            </div>
+                            <div class="slds-size_1-of-2 slds-p-right_small" style="{!(v.isTerritorialRating?'padding-top:10px;':'')}">
+                                <lightning:input name="city" label="City" value="{!v.oClientLocation.City__c}" aura:id="city" required="true"/>
+                            </div>
+                            <!--<div class="slds-size_1-of-2">
+                                <lightning:input name="county" label="County" value="{!v.oClientLocation.County__c}"/>
+                            </div>-->
+                            
+                            <div class="slds-size_1-of-2 slds-p-right_small">
+                                <aura:if isTrue="{!v.isTerritorialRating}">
+                                    <c:LightningLookup sObjectName="Zip_Code__c"
+                                                       valueFieldName="Id"
+                                                       displayedFieldName="Name"
+                                                       label="Postal Code"
+                                                       required="true"
+                                                       selectedValue="{!v.oClientLocation.Postal_Code__c}"
+                                                       svg="custom:custom39"/>
+                                    
+                                    <aura:set attribute="else">
+                                        	<lightning:input name="Zip_Code" label="Zip Code" value="{!v.oClientLocation.Zip_Code__c}" required="true" aura:id="Zip_Code"/>
+                                    </aura:set>
+                                </aura:if>
+                                <!--<lightning:input name="Zip_Code" label="Zip Code" value="{!v.oClientLocation.Zip_Code__c}" aura:id="Zip_Code" required="true"/>-->
+                            </div>
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCloseNewLocationModal}">Cancel</button>
+                        <button class="slds-button slds-button_brand" type="button" onclick="{!c.handleSubmitNewLocationModal}">Save</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        
+        <aura:if isTrue="{!v.isView}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_large" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.handleCancelViewModal}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">View {!v.selectedRecordName}</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <lightning:recordViewForm recordId="{!v.selectedRecordId}" 
+                                                  objectApiName="Client_Contact__c"
+                                                  density="comfy">
+                            <div class="slds-grid slds-wrap">
+                                <div class="slds-size_1-of-2 slds-p-right_small">
+                                    <lightning:outputField fieldName="First_Name__c" />
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:outputField fieldName="Last_Name__c" />
+                                </div>
+                                <div class="slds-size_1-of-2 slds-p-right_small">
+                                    <lightning:outputField fieldName="Title_Relationship__c" />
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:outputField fieldName="Email__c" />
+                                </div>
+                                <div class="slds-size_1-of-2 slds-p-right_small">
+                                    <lightning:outputField fieldName="Phone_Number__c" />
+                                </div>
+                                
+                                <aura:if isTrue="{!v.oClientContact.INC_EXC__c == 'Included'}">
+                                    <div class="slds-size_1-of-2"></div>
+                                    
+                                    <div class="slds-size_1-of-2 slds-p-right_small">
+                                        <lightning:outputField fieldName="Ownership__c" />
+                                    </div>
+                                    <div class="slds-size_1-of-2">
+                                        <lightning:outputField fieldName="State__c" />
+                                    </div>
+                                    
+                                    <div class="slds-size_1-of-2 slds-p-right_small">
+                                        <lightning:outputField fieldName="Payroll__c" />
+                                    </div>
+                                    <div class="slds-size_1-of-2">
+                                        <lightning:outputField fieldName="Location__c" />
+                                    </div>
+                                    
+                                    <div class="slds-size_1-of-2 slds-p-right_small">
+                                        <lightning:outputField fieldName="WC_Code__c" />
+                                    </div>
+                                    <div class="slds-size_1-of-2">
+                                        <lightning:outputField fieldName="Client_Location__c" />
+                                    </div>
+                                    
+                                    <div class="slds-size_1-of-2 slds-p-right_small">
+                                        <lightning:outputField fieldName="INC_EXC__c" />
+                                    </div>
+                                </aura:if>
+                                
+                                <div class="slds-size_1-of-2">
+                                    <lightning:outputField fieldName="Primary__c" />
+                                </div>
+                            </div>
+                        </lightning:recordViewForm>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCancelViewModal}">Cancel</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        
+        <aura:if isTrue="{!v.isEdit}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_large" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                <!--spinner-->
+                <lightning:spinner aura:id="editmodalspinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+                
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.handleCancelEditModal}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Edit {!v.selectedRecordName}</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <div class="slds-grid slds-wrap">
+                            <div class="slds-size_1-of-1">
+                                <lightning:select aura:id="clientContactType" name="clientContactType" value="{!v.oClinetContactWrapper.clientContactType}" label="Type" required="true" onchange="{!c.handleClientContactTypeChange}">
+                                    <option value="">--None--</option>
+                                    <aura:iteration items="{!v.mapType}" var="ind" indexVar="index">
+                                        <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==v.oClinetContactWrapper.clientContactType}" />
+                                    </aura:iteration>
+                                </lightning:select>
+                            </div>
+                            <div class="slds-size_1-of-2 slds-p-right_small">
+                                <lightning:input type="checkbox" label="Officer/Owner" checked="{!v.isIncluded}" onchange="{!c.handlePrimaryIncludeChange}" variant="label-stacked"/>
+                            </div>
+                            <div class="slds-size_1-of-2">
+                                <lightning:input type="checkbox" label="Primary" checked="{!v.isPrimary}" onchange="{!c.handlePrimaryIncludeChange}" variant="label-stacked"/>
+                            </div>
+                            
+                            <div class="slds-size_1-of-2 slds-p-right_small">
+                                <lightning:input label="First Name" aura:id="firstname" required="true" value="{!v.oClinetContactWrapper.firstName}"/>
+                            </div>
+                            <div class="slds-size_1-of-2">
+                                <lightning:input label="Last Name" aura:id="lastname" required="true" value="{!v.oClinetContactWrapper.lastName}"/>
+                            </div>
+                            <div class="slds-size_1-of-2 slds-p-right_small">
+                                <lightning:input label="Title/Relationship" aura:id="title" required="true" value="{!v.oClinetContactWrapper.titleRelationship}"/>
+                            </div>
+                            <div class="slds-size_1-of-2">
+                                <lightning:input label="Email" type="email" value="{!v.oClinetContactWrapper.email}"/>
+                            </div>
+                            <div class="slds-size_1-of-2 slds-p-right_small">
+                                <lightning:input label="Phone" type="tel" value="{!v.oClinetContactWrapper.phone}"/>
+                            </div>
+                            
+                            <aura:if isTrue="{!v.isShowMobilePhone}">
+                                <div class="slds-size_1-of-2">
+                                    <lightning:input label="Mobile Phone" type="tel" value="{!v.oClinetContactWrapper.mobilePhone}"/>
+                                </div>
+                            </aura:if>
+                            
+                            <aura:if isTrue="{!v.isIncluded}">
+                                <div class="{!(v.isShowMobilePhone?'slds-size_1-of-2 slds-p-right_small':'slds-size_1-of-2')}">
+                                    <lightning:input type="date" name="date" label="Birthdate" value="{!v.oClinetContactWrapper.birthdate}"/>
+                                </div>
+                                
+                                <div class="{!(v.isShowMobilePhone?'slds-size_1-of-2':'slds-size_1-of-2 slds-p-right_small')}">
+                                    <lightning:input label="Ownership %" aura:id="ownership" required="true" type="number" formatter="percent-fixed" step="0.01" value="{!v.oClinetContactWrapper.ownership}"/>
+                                </div>
+                                <div class="{!(v.isShowMobilePhone?'slds-size_1-of-2 slds-p-right_small':'slds-size_1-of-2')}">
+                                    <lightning:select aura:id="state" required="true" value="{!v.oClinetContactWrapper.selectedState}" name="state" label="State" onchange="{!c.handleStateChange}">
+                                        <option value="">--None--</option>
+                                        <aura:iteration items="{!v.mapStatePicklistValues}" var="ind" indexVar="index">
+                                            <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==v.oClinetContactWrapper.selectedState}" />
+                                        </aura:iteration>
+                                    </lightning:select>
+                                </div>
+                                <div class="{!(v.isShowMobilePhone?'slds-size_1-of-2':'slds-size_1-of-2 slds-p-right_small')}">
+                                    <lightning:input label="Payroll" aura:id="payroll" required="true" value="{!v.oClinetContactWrapper.payroll}" type="number" formatter="currency" step="0.01"/>
+                                </div>
+                                <div class="{!(v.isShowMobilePhone?'slds-size_1-of-2 slds-p-right_small':'slds-size_1-of-2')}" style="{!(v.isShowMobilePhone?'padding-top: 15px;':'')}">
+                                    <div class="slds-grid slds-wrap">
+                                        <div class="slds-size_6-of-7">
+                                            <lightning:select aura:id="location" required="true" value="{!v.oClinetContactWrapper.selectedClientLocation}" name="location" label="Location" onchange="{!c.handleLocationChange}">
+                                                <option value="">--None--</option>
+                                                <aura:iteration items="{!v.mapClientLocationPicklistValues}" var="ind" indexVar="index">
+                                                    <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==v.oClinetContactWrapper.selectedClientLocation}" />
+                                                </aura:iteration>
+                                            </lightning:select>
+                                        </div>
+                                        <div class="slds-size_1-of-7 slds-text-align_right slds-p-top_large">
+                                            <lightning:buttonIcon iconName="utility:add" alternativeText="add" title="add" onclick="{!c.handleNewLocation}"/>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                                <div class="{!(v.isShowMobilePhone?'slds-size_1-of-2':'slds-size_1-of-2 slds-p-right_small')}">
+                                    <c:LightningLookup sObjectName="WC_Code__c"
+                                                       valueFieldName="Id"
+                                                       displayedFieldName="Name"
+                                                       label="WC Code"
+                                                       required="true"
+                                                       selectedValue="{!v.oClinetContactWrapper.selectedStampCode}"
+                                                       svg="custom:custom39"/>
+                                </div>
+                                <div class="{!(v.isShowMobilePhone?'slds-size_1-of-2 slds-p-right_small':'slds-size_1-of-2')}" style="{!(v.isShowMobilePhone?'':'padding-top: 15px;')}">
+                                    <div class="slds-form-element slds-form-element_edit slds-form-element_readonly slds-hint-parent">
+                                        <span class="slds-form-element__label">Client Location</span>
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-form-element__static">
+                                                <aura:unescapedHtml value="{!v.oClinetContactWrapper.clientLocation}"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="{!(v.isShowMobilePhone?'slds-size_1-of-2':'slds-size_1-of-2 slds-p-right_small')}">
+                                    <lightning:textarea name="duties" label="Duties" value="{!v.oClinetContactWrapper.duties}"/>
+                                </div>
+                            </aura:if>
+                            
+                            
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCancelEditModal}">Cancel</button>
+                        <button class="slds-button slds-button_brand" type="button" onclick="{!c.handleSubmitAddClinetContact}">Save</button>
+                    </footer>
+                    
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        
+        
+    </div>
+</aura:component>

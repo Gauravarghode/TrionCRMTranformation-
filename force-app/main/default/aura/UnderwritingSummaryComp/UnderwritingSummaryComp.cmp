@@ -1,0 +1,47 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" 
+                access="global" >
+	<!--attribute-->
+    <aura:attribute name="recordId" type="String"/>
+    
+    <!--markup-->
+    <div>
+        
+        <div class="slds-text-heading_medium slds-text-align_center slds-p-bottom_small">
+        	<h1><b><u>Underwriting Summary</u></b></h1>
+        </div>
+        
+    	<lightning:recordViewForm recordId="{!v.recordId}" objectApiName="Proposal__c">
+            <lightning:layout multipleRows="true">
+                <lightning:layoutItem size="2">
+                	<lightning:outputField fieldName="Total_of_Claims__c" />
+                </lightning:layoutItem>
+                <lightning:layoutItem size="2">
+                	<lightning:outputField fieldName="Average_Aged_Years__c" />
+                </lightning:layoutItem>
+                <lightning:layoutItem size="2">
+                	<lightning:outputField fieldName="Total_Aged_Months__c" />
+                </lightning:layoutItem>
+                <lightning:layoutItem size="3">
+                	<lightning:outputField fieldName="Total_Losses__c" />
+                </lightning:layoutItem>
+                <lightning:layoutItem size="3">
+                	<lightning:outputField fieldName="Total_Developed_Losses__c" />
+                </lightning:layoutItem>
+                <lightning:layoutItem size="3">
+                	<lightning:outputField fieldName="Average_Losses_Per_Year__c" />
+                </lightning:layoutItem>
+                <lightning:layoutItem size="3">
+                	<lightning:outputField fieldName="Average_Developed_Losses_Per_Year__c" />
+                </lightning:layoutItem>
+                <lightning:layoutItem size="3">
+                	<lightning:outputField fieldName="Selected_Losses__c" />
+                </lightning:layoutItem>
+                <lightning:layoutItem size="3">
+                	
+                </lightning:layoutItem>
+            </lightning:layout>
+            
+        </lightning:recordViewForm>
+    </div>
+    
+</aura:component>

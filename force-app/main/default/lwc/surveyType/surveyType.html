@@ -1,0 +1,21 @@
+<template>
+    <lightning-card >
+        <div class="slds-m-around_medium">
+            <lightning-combobox
+                label="Survey Type"
+                placeholder="Choose a Survey type"
+                options={surveyTypes}
+                value={selectedSurveyType}
+                onchange={handleSurveyTypeChange}>
+            </lightning-combobox>
+        </div>
+
+        <div class="slds-p-around_medium">
+            <lightning-button label="Submit" 
+                              variant="brand" 
+                              onclick={handleSubmit}>
+            </lightning-button>
+        </div>
+        
+</lightning-card>
+</template>

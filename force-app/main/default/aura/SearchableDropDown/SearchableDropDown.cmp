@@ -1,0 +1,63 @@
+<aura:component>
+    <aura:attribute name="class" type="String" access="public" required="false" description="class"/>
+    <aura:attribute name="errorClass" type="String" access="private" required="false" default=""/>
+    <aura:attribute name="required" type="Boolean" access="public" default="false" description="Whether the field is a required field"/>
+    <aura:attribute name="helpText" type="String" access="public" description="Help text for field"/>
+    <aura:attribute name="disabled" type="Boolean" access="public" default="false" description="Whether the input is disabled "/>
+    <aura:attribute name="defaultValue" type="String" access="public" required="false" description="Default value for lookup field"/>
+    <aura:attribute name="resultListDisplay" type="Map" access="global" />
+    <aura:attribute name="matchedListDisplay" type="Map" access="private" />
+    <aura:attribute name="label" type="String" access="public" default="Search" description="Label for the lookup field"/>
+    <aura:attribute name="valid" type="Boolean" access="public" default="true" description="Whether the field is valid "/>
+    <aura:attribute name="selectedValue" type="String" access="public" required="false" description="value of 'valueFieldName' for the selected item"/>
+    <aura:attribute name="selectedName" type="String" access="public" required="false" description="value of 'displayedFieldName' for the selected item"/>
+    <aura:attribute name="pills" type="Boolean" access="public" default="false" description="Whether the input is in pill form "/>
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    
+    <div>
+        <lightning:spinner aura:id="spinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+    </div>
+
+    <!-- Parent: {!v.parentId} ID: {!v.cmpId} -->
+    <div aura:id="dropDown" class="slds-scope slds-form-element slds-lookup" data-select="single">
+        <div class="{!v.class + ' ' + v.errorClass}">
+            <label class="slds-form-element__label" for="lookup-65">
+                <abbr class="{!v.required ? 'slds-required' : 'slds-hide'}" title="required">*</abbr>
+                {!v.label}
+            </label>
+            
+            <div class="slds-form-element__control" >
+                <div class="">
+                    <input type="search" class="slds-input lookup" id="{!globalId + '_myinput'}" aura:id="inputField"
+                           aria-owns="lookup-65" role="combobox" 
+                           aria-activedescendant="" aria-expanded="false" aria-autocomplete="list" 
+                           disabled="{!v.disabled}" 
+                           oninput="{!c.performLookup}" 
+                           onclick="{!c.toggleMenu }"
+                           onblur="{!c.checkValidity}" 
+                           placeholder="{!v.defaultValue}"/>
+                    <div aura:id="pillsdiv"/>
+                    <lightning:buttonicon variant="bare" iconName="utility:close" class="alignButton move-left hide"
+											onclick="{!c.clearField}" alternativeText="remove" aura:id="removebtn"/>
+                    <lightning:buttonicon variant="bare" iconName="utility:switch" class="alignButton" aura:id="dropdownicon"
+                                          onclick="{!c.toggleMenu }" alternativeText="toggle show"/>
+                </div>
+            </div>
+            <div class="slds-lookup__menu" id="lookup-65" >
+                <ul class="slds-lookup__list" role="listbox" aura:id="diplayedul">
+                    <aura:iteration var="item" items="{!v.matchedListDisplay}" indexVar="idx">
+                        <li role="presentation" data-index="{!idx}" onclick="{!c.selectItem}"  class="push-down slds-p-around_small">
+                            <span class="slds-truncate">
+                                {!item.value}
+                            </span>
+                        </li>
+                    </aura:iteration>
+                </ul>
+            </div>
+            <div id="error-message" class="{!v.valid ? 'slds-hide' : 'slds-form-element__help'}">
+                Complete this field
+            </div>	
+        </div>				
+    </div>  
+</aura:component>

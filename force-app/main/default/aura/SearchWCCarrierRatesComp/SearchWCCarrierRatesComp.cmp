@@ -1,0 +1,185 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes" 
+                access="global"
+                controller="SearchWCCarrierRatesCompCtrl">
+    <!--attribute-->
+    <aura:attribute name="isShowSearchFilter" type="boolean" default="true"/>
+    <aura:attribute name="isShowModal" type="boolean" default="false"/>
+    <aura:attribute name="filteredData" type="List"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="errors" type="Object" default="[]"/>
+    <aura:attribute name="draftValues" type="Object" default="[]"/>
+    <aura:attribute name="lstFilters" type="List" default="[]"/>
+    <aura:attribute name="sortedBy" type="String" />
+    <aura:attribute name="sortedDirection" type="Boolean" default="true" />
+    <aura:attribute name="mapStatusPicklistValues" type="Map"/>
+    <aura:attribute name="mapCarrierPicklistValues" type="Map"/>
+    <aura:attribute name="mapStatePicklistValues" type="Map"/>
+    
+    <!--handler-->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>  
+    
+    <!--markup-->
+    <div>
+        <lightning:spinner aura:id="spinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+        
+        <div class="slds-text-heading_medium slds-text-align_center custom-text-decoration"><b>WC Rates</b></div>
+        
+        <aura:if isTrue="{!!v.isShowSearchFilter}">
+            <div class="slds-grid slds-wrap">
+                <div class="slds-size_1-of-1" style="height: 250px">
+                    <lightning:datatable columns="{! v.columns }"
+                                         data="{! v.filteredData }"
+                                         keyField="Id"
+                                         sortedBy="{!v.sortedBy}"
+                                         sortedDirection="{!v.sortedDirection}" 
+                                         onsort="{!c.handleColumnSorting}"
+                                         errors="{! v.errors }"
+                                         draftValues="{! v.draftValues }"
+                                         onsave="{! c.handleSaveEdition }"
+                                         oncancel="{! c.handleCancel }"/>
+                </div>
+                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                    <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleAdd}">Add</button>
+                    <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleSearchCancel}">Finish</button>
+                </div>
+            </div>    
+        </aura:if>
+        
+        <aura:if isTrue="{!v.isShowSearchFilter}">
+            <aura:iteration items="{!v.lstFilters}" var="oFilter" indexVar="index">
+                <div class="slds-grid slds-wrap">
+                    <div class="slds-size_11-of-12">
+                        <div class="slds-grid slds-wrap">
+                            <div class="slds-size_1-of-4">
+                                <c:LightningLookup sObjectName="WC_Code__c"
+                                                   valueFieldName="Id"
+                                                   displayedFieldName="Name"
+                                                   label="Comp Code"
+                                                   selectedValue="{!oFilter.selectedCompCode}"
+                                                   required="true"
+                                                   svg="custom:custom18"
+                                                   disabled="{!oFilter.isDisabledSelectedCompCode}"/>
+                            </div>
+                            <div class="slds-size_1-of-4 slds-p-left_small">
+                                <aura:if isTrue="{!v.mapStatePicklistValues != null &amp;&amp; v.mapStatePicklistValues != undefined}">
+                                	<c:SearchableDropDown label="State" 
+                                                      selectedValue="{!oFilter.selectedState}"
+                                                      resultListDisplay="{!v.mapStatePicklistValues}"
+                                                      disabled="{!oFilter.isDisabledSelectedState}"/>
+                                    <aura:set attribute="else">
+                                    	<c:SearchableDropDown label="State" 
+                                                      selectedValue="{!oFilter.selectedState}"
+                                                      resultListDisplay="{!v.mapStatePicklistValues}"
+                                                      disabled="{!oFilter.isDisabledSelectedState}"/>
+                                    </aura:set>
+                                </aura:if>
+                            </div>
+                            <div class="slds-size_1-of-4 slds-p-left_small" style="padding-top:11px;">
+                                <lightning:select aura:id="status" value="{!oFilter.selectedCarrier}" name="carrier" label="Carrier" disabled="{!oFilter.isDisabledSelectedCarrier}">
+                                    <option value="">--None--</option>
+                                    <aura:iteration items="{!v.mapCarrierPicklistValues}" var="ind" indexVar="index">
+                                        <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==oFilter.selectedCarrier}" />
+                                    </aura:iteration>
+                                </lightning:select>
+                            </div>
+                            <div class="slds-size_1-of-4 slds-p-left_small" style="padding-top:11px;">
+                                <lightning:select aura:id="status" value="{!oFilter.selectedStatus}" name="status" label="Status" disabled="{!oFilter.isDisabledSelectedStatus}">
+                                    <option value="">--None--</option>
+                                    <aura:iteration items="{!v.mapStatusPicklistValues}" var="ind" indexVar="index">
+                                        <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==oFilter.selectedStatus}" />
+                                    </aura:iteration>
+                                </lightning:select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slds-size_1-of-12 slds-p-top_x-large slds-text-align_center">
+                        <lightning:buttonIcon iconName="utility:edit" class="slds-m-left_xx-small slds-text-align_center" alternativeText="Edit" title="Edit" onclick="{!c.handleEditFilter}" name="{!index}" disabled="{!!(oFilter.isDisabledSelectedCompCode || oFilter.isDisabledSelectedState || oFilter.isDisabledSelectedCarrier || oFilter.isDisabledSelectedStatus)}"/>
+                    	<lightning:buttonIcon iconName="utility:delete" class="slds-m-left_xx-small slds-text-align_center" alternativeText="Delete" title="Delete" onclick="{!c.handleDeleteFilter}" name="{!index}" />
+                    </div>
+                </div>
+            </aura:iteration>
+            
+            <div class="slds-p-top_small">
+                <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleMoreFilter}">
+                    <lightning:icon iconName="utility:add" size="x-small" class="slds-p-right_x-small"/>Add Filter
+                </button>
+                <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleApplyFilter}">Apply Filter</button>
+                <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleResetFilter}">Reset Filter</button>
+            </div>
+        </aura:if>
+        
+        <aura:if isTrue="{!v.isShowModal}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_medium" aria-labelledby="modal-heading" aria-modal="true" aria-describedby="modal-content-id">
+                <div>
+                    <lightning:spinner aura:id="modalspinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+                </div>
+                
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" type="button" onclick="{!c.handleCloseModal}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading" class="slds-modal__title slds-hyphenate">WC Rates Filter</h2>
+                    </header> 
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id">
+                        <aura:iteration items="{!v.lstFilters}" var="oFilter" indexVar="index">
+                            <div class="slds-grid slds-wrap">
+                                <div class="slds-size_11-of-12">
+                                    <div class="slds-grid slds-wrap">
+                                        <div class="slds-size_1-of-4">
+                                            <c:LightningLookup sObjectName="WC_Code__c"
+                                                               valueFieldName="Id"
+                                                               displayedFieldName="Name"
+                                                               label="Comp Code"
+                                                               selectedValue="{!oFilter.selectedCompCode}"
+                                                               required="true"
+                                                               svg="custom:custom18"
+                                                               disabled="{!oFilter.isDisabledSelectedCompCode}"/>
+                                        </div>
+                                        <div class="slds-size_1-of-4 slds-p-left_small">
+                                            <c:SearchableDropDown label="State" 
+                                                                  selectedValue="{!oFilter.selectedState}"
+                                                                  resultListDisplay="{!v.mapStatePicklistValues}"
+                                                                  disabled="{!oFilter.isDisabledSelectedState}"/>
+                                        </div>
+                                        <div class="slds-size_1-of-4 slds-p-left_small" style="padding-top:11px;">
+                                            <lightning:select aura:id="status" value="{!oFilter.selectedCarrier}" name="carrier" label="Carrier" disabled="{!oFilter.isDisabledSelectedCarrier}">
+                                                <option value="">--None--</option>
+                                                <aura:iteration items="{!v.mapCarrierPicklistValues}" var="ind" indexVar="index">
+                                                    <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==oFilter.selectedCarrier}" />
+                                                </aura:iteration>
+                                            </lightning:select>
+                                        </div>
+                                        <div class="slds-size_1-of-4 slds-p-left_small" style="padding-top:11px;">
+                                            <lightning:select aura:id="status" value="{!oFilter.selectedStatus}" name="status" label="Status" disabled="{!oFilter.isDisabledSelectedStatus}">
+                                                <option value="">--None--</option>
+                                                <aura:iteration items="{!v.mapStatusPicklistValues}" var="ind" indexVar="key">
+                                                    <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==oFilter.selectedStatus}" />
+                                                </aura:iteration>
+                                            </lightning:select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-size_1-of-12 slds-p-top_x-large slds-text-align_center">
+                                    <lightning:buttonIcon iconName="utility:edit" class="slds-m-left_xx-small slds-text-align_center" alternativeText="Edit" title="Edit" onclick="{!c.handleEditFilter}" name="{!index}" disabled="{!!(oFilter.isDisabledSelectedCompCode || oFilter.isDisabledSelectedState || oFilter.isDisabledSelectedCarrier || oFilter.isDisabledSelectedStatus)}"/>
+                                    <lightning:buttonIcon iconName="utility:delete" class="slds-m-left_xx-small slds-text-align_center" alternativeText="Delete" title="Delete" onclick="{!c.handleDeleteFilter}" name="{!index}" />
+                                </div>
+                            </div>
+                        </aura:iteration>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCloseModal}">Cancel</button>
+                        <button class="slds-button slds-button_brand" type="button" onclick="{!c.handleApplyFilter}">Apply Filter</button>
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleMoreFilter}">
+                            <lightning:icon iconName="utility:add" size="x-small" class="slds-p-right_x-small"/>Add Filter
+                        </button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        
+    </div>
+    
+</aura:component>

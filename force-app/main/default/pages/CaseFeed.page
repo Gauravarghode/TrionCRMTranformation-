@@ -1,0 +1,81 @@
+<apex:page standardController="Case">
+
+    <!-- Repositions publisher tabs to a horizontal arrangement on top of the page -->
+    <ul class="demoNav" style="list-style: none; overflow: hidden">
+        <li style="float:left"><a id="custom_email_tab" class="selected" href="javascript:void(0);" onclick="getDemoSidebarMenu().selectMenuItem('custom_email_tab');"><span class="menuItem">Email Customer</span></a></li>
+        <li style="float:left"><a id="custom_log_call_tab" href="javascript:void(0);" onclick="getDemoSidebarMenu().selectMenuItem('custom_log_call_tab');"><span class="menuItem">Log Call</span></a></li>
+        <li style="float:left"><a id="custom_portal_tab" href="javascript:void(0);" onclick="getDemoSidebarMenu().selectMenuItem('custom_portal_tab');"><span class="menuItem">Portal Answer</span></a></li>
+        <li style="float:left"><a id="custom_detail_tab" href="javascript:void(0);" onclick="getDemoSidebarMenu().selectMenuItem('custom_detail_tab');"><span class="menuItem">Case Details</span></a></li>
+    </ul>
+
+    <!-- Email action -->
+    <div id="custom_email_pub_vf">
+        <apex:emailPublisher entityId="{!case.id}"
+             width="80%"
+             emailBodyHeight="10em"
+             showAdditionalFields="false" 
+             enableQuickText="true"
+             toAddresses="{!case.contact.email}"
+             toVisibility="readOnly"
+             fromAddresses="support@cirrus.com" 
+             onSubmitSuccess="refreshFeed();" />
+    </div>
+
+    <!-- Log call action -->
+    <div id="custom_log_call_vf" style="display:none">
+        <apex:logCallPublisher entityId="{!case.id}"
+            width="80%"
+            logCallBodyHeight="10em" 
+            reRender="demoFeed"
+            onSubmitSuccess="refreshFeed();" />
+    </div>
+
+  
+
+    <!-- Case detail page -->
+    <div id="custom_detail_vf" style="display:none">
+        <apex:detail inlineEdit="true" relatedList="true" rerender="demoFeed" />
+    </div>
+    
+    <!-- Include library for using service desk console API -->
+    <apex:includeScript value="/support/console/25.0/integration.js"/>
+    
+    <!-- Javascript for switching publishers -->
+    <script type="text/javascript">
+        function DemoSidebarMenu() {
+            var menus = {"custom_email_tab" : "custom_email_pub_vf",
+                         "custom_log_call_tab" : "custom_log_call_vf",
+                         "custom_portal_tab" : "custom_portal_vf",
+                         "custom_detail_tab" : "custom_detail_vf"};
+
+            this.selectMenuItem = function(tabId) {
+                for (var index in menus) {
+                    var tabEl = document.getElementById(index);
+                    var vfEl = document.getElementById(menus[index]);
+
+                    if (index == tabId) {
+                        tabEl.className = "selected";
+                        vfEl.style.display = "block";
+                    } else {
+                        tabEl.className = "";
+                        vfEl.style.display = "none";
+                    }
+                }
+             };
+        }
+        var demoSidebarMenu;
+        var getDemoSidebarMenu = function() {
+            if (!demoSidebarMenu) {
+                demoSidebarMenu = new DemoSidebarMenu();
+            }
+            return demoSidebarMenu;
+        };
+    </script>
+
+    <!-- Javascript for firing event to refresh feed in the sidebar -->
+    <script type="text/javascript">
+        function refreshFeed() {
+            sforce.console.fireEvent('Cirrus.samplePublisherVFPage.RefreshFeedEvent', null, null);
+        }
+    </script>
+</apex:page>

@@ -1,0 +1,1 @@
+<apex:page StandardController="Proposal__c" showHeader="false" sidebar="false"><apex:form ><GridWiz_Unlimit:GridWizardComponent ObjectName="Proposal__c" Objunique="{!Proposal__c.Id}" grid="a2Z1M000003zRjOUAU"/></apex:form></apex:page>

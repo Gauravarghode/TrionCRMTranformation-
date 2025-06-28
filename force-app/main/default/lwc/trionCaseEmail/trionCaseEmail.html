@@ -1,0 +1,63 @@
+<template>
+    <article class="slds-card slds-card_boundary">
+        <div class="slds-card__header slds-grid slds-page-header">
+            <header class="slds-media slds-media_center slds-has-flexi-truncate slds-border_bottom">
+                <!-- <article class="slds-box "> -->
+                <div class="slds-media__figure slds-m-vertical_small slds-list_horizontal">
+                    
+                    <lightning-avatar fallback-icon-name="standard:email" size="small"></lightning-avatar>
+                    
+                    <span class="slds-assistive-text">Related Emails</span>
+                    <div class="slds-media__body">
+                        <h2 class="slds-card__header-title">
+                        <a class="slds-card__header-link slds-truncate slds-m-left_small" title="Related Emails" onclick={viewAllRecords}>
+                            <span>{cardLabel}</span>
+                        </a>
+                        </h2>
+                    </div>
+                </div>
+                
+                <!-- </article> -->
+            </header>
+        </div>
+        <div class="slds-card__body slds-card__body_inner">
+            <template if:true={showEmails}>
+                        <template for:each={emailsToDisplay} for:item="em">
+                            <div key={em.IdOfCsv} class="slds-m-bottom_small">
+                                <!-- <lightning-tile label={em.Subject} onclick={viewRecordDetails} data-email-id={em.IdOfCsv}> -->
+                                <lightning-tile label={em.Subject} onclick={handleNavigateToMessage} data-email-id={em.IdOfCsv}>
+                                    <dl class="slds-dl_horizontal">
+                                        <dt class="slds-dl_horizontal__label">
+                                            <p class="slds-truncate" title="From Address:">From Address:</p>
+                                        </dt>
+                                        <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                            <p class="slds-truncate" title="From Address:">{em.FromAddress}</p>
+                                        </dd>
+                                        <dt class="slds-dl_horizontal__label">
+                                            <p class="slds-truncate" title="To Address:">To Address:</p>
+                                        </dt>
+                                        <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                            <p class="slds-truncate" title="To Address:">{em.ToAddress}</p>
+                                        </dd>
+                                        <dt class="slds-dl_horizontal__label">
+                                            <p class="slds-truncate" title="Message Date:">Message Date:</p>
+                                        </dt>
+                                        <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                            <p class="slds-truncate" title="Message Date:">{em.MessageDate}</p>
+                                        </dd>
+                                    </dl>
+                                </lightning-tile>
+                            </div>
+                        </template>
+                    </template>
+                    <template if:false={showEmails}>
+                        <p>No Email records to display.</p>
+                    </template>
+            </div>
+        <footer class="slds-card__footer">
+            <a class="slds-card__footer-action" onclick={viewAllRecords}>View All
+            <span class="slds-assistive-text">Related Emails</span>
+            </a>
+        </footer>
+    </article>
+</template>

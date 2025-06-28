@@ -1,0 +1,11 @@
+.slds-truncate {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    
+}
+.slds-p-right_small .slds-card__header-title {
+  background-color: #f0f0f0; /* Light gray background color */
+  padding: 5px 10px; /* Add padding around the text */
+}

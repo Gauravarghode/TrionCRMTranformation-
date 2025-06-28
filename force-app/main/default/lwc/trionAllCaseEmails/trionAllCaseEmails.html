@@ -1,0 +1,97 @@
+<template>
+    <article class="slds-card">
+        <div class="slds-m-left_medium slds-m-top_medium">
+            <p> <a onclick={openCaseList}>Case</a> >  <a onclick={openCaseRecord}>{caseRecord.CaseNumber}</a></p>
+            <p class="slds-page-header__title ">Emails</p> <br/>
+            <p>{emailCounter} items</p>
+        </div>
+        <div class="slds-table_edit_container slds-is-relative">
+            <table aria-multiselectable="true" class="slds-table slds-no-cell-focus slds-table_bordered slds-table_edit slds-table_fixed-layout slds-table_resizable-cols" role="grid" aria-label="Example default inline edit table with cell focused">
+                <thead>
+                    <tr class="slds-line-height_reset">
+                        <th aria-sort="none" class="slds-is-resizable slds-is-sortable" scope="col" style="width:1.75rem">
+                            <span class="slds-assistive-text">Sort by: </span>
+                            <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate"></div>
+                        </th>
+                        <th aria-sort="none" class="slds-is-resizable slds-is-sortable" scope="col">
+                            <span class="slds-assistive-text">Sort by: </span>
+                            <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                                <span class="slds-truncate" title="Subject">Subject</span>
+                            </div>
+                        </th>
+                        <th aria-sort="none" class="slds-is-resizable slds-is-sortable" scope="col">
+                            <span class="slds-assistive-text">Sort by: </span>
+                            <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                                <span class="slds-truncate" title="From Address">From Address</span>
+                            </div>
+                        </th>
+                        <th aria-sort="none" class="slds-is-resizable slds-is-sortable" scope="col">
+                            <span class="slds-assistive-text">Sort by: </span>
+                            <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                                <span class="slds-truncate" title="To Address">To Address</span>
+                            </div>
+                        </th>
+                        <th aria-sort="none" class="slds-is-resizable slds-is-sortable" scope="col">
+                            <span class="slds-assistive-text">Sort by: </span>
+                            <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                                <span class="slds-truncate" title="Message Date">Message Date</span>
+                            </div>
+                        </th>
+                        <th aria-sort="none" class="slds-is-resizable slds-is-sortable" scope="col">
+                            <span class="slds-assistive-text">Sort by: </span>
+                            <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                                <span class="slds-truncate" title="Status">Status</span>
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template if:false={isDataLoaded}>
+                        <br/>
+                        <div>
+                            <lightning-spinner alternative-text="Loading Data from SharePoint"></lightning-spinner>
+                        </div><br/>
+                    </template>
+                    <template if:true={isDataLoaded}>
+                        <template for:each={emails} for:item="email">
+                            <tr aria-selected="false" class="slds-hint-parent" key={email.IdOfCsv}>
+                                <td role="gridcell">
+                                    <span class="slds-grid slds-grid_align-spread">
+                                        <span class="slds-truncate" title=""></span>
+                                    </span>
+                                </td>
+                                <td role="gridcell">
+                                    <span class="slds-grid slds-grid_align-spread">
+                                        <span class="slds-truncate" title="Subject">
+                                            <a onclick={handleNavigateToMessage} data-emailid={email.IdOfCsv}>{email.Subject}</a>
+                                        </span>
+                                    </span>
+                                </td>
+                                <td role="gridcell">
+                                    <span class="slds-grid slds-grid_align-spread">
+                                        <span class="slds-truncate" title="From Address">{email.FromAddress}</span>
+                                    </span>
+                                </td>
+                                <td role="gridcell">
+                                    <span class="slds-grid slds-grid_align-spread">
+                                        <span class="slds-truncate" title="To Address">{email.ToAddress}</span>
+                                    </span>
+                                </td>
+                                <td role="gridcell">
+                                    <span class="slds-grid slds-grid_align-spread">
+                                        <span class="slds-truncate" title="Message Date">{email.MessageDate}</span>
+                                    </span>
+                                </td>
+                                <td role="gridcell">
+                                    <span class="slds-grid slds-grid_align-spread">
+                                        <span class="slds-truncate" title="Status">{email.Status}</span>
+                                    </span>
+                                </td>
+                            </tr>
+                        </template>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </article>
+</template>

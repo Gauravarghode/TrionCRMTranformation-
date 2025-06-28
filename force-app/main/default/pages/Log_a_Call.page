@@ -1,0 +1,8 @@
+<apex:page standardController="Case">
+  <apex:logCallPublisher entityId="{!case.id}" 
+      width="100%"
+      title="Log a Call"
+      autoCollapseBody="false"
+      showAdditionalFields="false" 
+      submitButtonName="Save Log" />
+</apex:page>

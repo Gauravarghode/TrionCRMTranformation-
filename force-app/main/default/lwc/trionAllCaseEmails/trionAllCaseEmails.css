@@ -1,0 +1,18 @@
+.slds-card .slds-table {
+    width: 100%; /* Ensure table width is 100% of card */
+    table-layout: fixed; /* Optional, ensures columns have equal width */
+    overflow-x: auto; /* Adds horizontal scrollbar if table is too wide */
+}
+.slds-table_edit_container {
+    overflow-x: auto;
+}
+.slds-resizable__handle {
+    cursor: col-resize;
+    background-color: #ccc;
+    width: 5px;
+    height: 100%;
+    position: absolute;
+    right: 0;
+    top: 0;
+	bottom: 0;
+}

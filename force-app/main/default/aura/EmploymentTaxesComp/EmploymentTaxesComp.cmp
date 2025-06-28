@@ -1,0 +1,193 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" 
+                access="global"
+                controller="EmploymentTaxesCompCtrl">
+	
+    <!--attribute-->
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="selectedYearId" type="String"/>
+    <aura:attribute name="selectedRecordId" type="String"/>
+    <aura:attribute name="selectedRecordName" type="String"/>
+    <aura:attribute name="mapYearOptions" type="Map"/>
+    <aura:attribute name="isShowSelectYear" type="Boolean" default="false"/>
+    <aura:attribute name="isShowCheckboxColumn" type="Boolean" default="true"/>
+    <aura:attribute name="isShowEditModal" type="Boolean" default="false"/>
+    <aura:attribute name="isEdit" type="Boolean" default="false"/>
+    <aura:attribute name="isDelete" type="Boolean" default="false"/>
+    <aura:attribute name="isChangeState" type="Boolean" default="false"/>
+    <aura:attribute name="isShowDeleteModal" type="Boolean" default="false"/>
+    <aura:attribute name="oProposal" type="Proposal__c"/>
+    <aura:attribute name="lstSUTAQuotes" type="List"/>
+    <aura:attribute name="mapSUTAOptions" type="Map"/>
+    <aura:attribute name="selectedSUTA" type="String"/>
+    
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="sortedBy" type="String" />
+    <aura:attribute name="selectedRows" type="List"/>
+    <aura:attribute name="errors" type="Object" default="[]"/>
+    <aura:attribute name="draftValues" type="Object" default="[]"/>
+    <aura:attribute name="sortedDirection" type="Boolean" default="true" />
+    
+    <aura:attribute name="buttonvisibilitysoqlFilter" type="String"/>
+    <aura:attribute name="isButtonVisible" type="Boolean" default="true"/>
+    
+    <!--handler-->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/> 
+    
+    <!--markup-->
+    <div>
+        <!--spinner-->
+        <lightning:spinner aura:id="spinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+        
+        <div class="slds-grid slds-wrap">
+            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                <aura:if isTrue="{!!v.isShowSelectYear}">
+                    
+                        <lightning:recordViewForm recordId="{!v.recordId}" 
+                                                  objectApiName="Proposal__c"
+                                                  density="comfy">
+                            <div class="slds-grid slds-wrap">
+                                <div class="slds-size_1-of-4">
+                                    <lightning:outputField fieldName="Year__c" />
+                                </div>
+                                <div class="slds-size_1-of-4">
+                                    <lightning:outputField fieldName="FICA__c" />
+                                </div>
+                                <div class="slds-size_1-of-4">
+                                    <lightning:outputField fieldName="Medicare__c" />
+                                </div>
+                                <div class="slds-size_1-of-4">
+                                    <lightning:outputField fieldName="FUTA__c" />
+                                </div>
+                            </div>
+                        </lightning:recordViewForm>
+                    
+                    <aura:if isTrue="{!v.isButtonVisible}">
+                		<button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleTaxYear}">Select Tax Year</button>
+                    </aura:if>
+                    
+                    <aura:set attribute="else">
+                    	<lightning:select value="{!v.selectedYearId}" name="year" label="Year">
+                            <option value="">--None--</option>
+                            <aura:iteration items="{!v.mapYearOptions}" var="ind" indexVar="key">
+                                <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==v.selectedYearId}" />
+                            </aura:iteration>
+                        </lightning:select>
+                        <div class="slds-p-top_medium">
+                        	<button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleSelectTaxYear}">Save</button>
+                            <button class="slds-button slds-button_neutral slds-m-left_xx-small" type="button" onclick="{!c.handleCancelTaxYear}">Cancel</button>
+                        </div>
+                    </aura:set>
+                </aura:if>
+            </div>
+            
+            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+            	<h1>State Unemployment Taxes</h1>
+            </div>
+            
+            <div class="slds-size_1-of-1">
+				<!--datatable-->
+                <div class="slds-size_1-of-1">
+                    <lightning:datatable columns="{! v.columns }"
+                                         data="{! v.lstSUTAQuotes }"
+                                         keyField="Id"
+                                         hideCheckboxColumn="{!v.isShowCheckboxColumn}"
+                                         sortedBy="{!v.sortedBy}"
+                                         sortedDirection="{!v.sortedDirection}" 
+                                         onsort="{!c.handleColumnSorting}"
+                                         errors="{! v.errors }"
+                                         draftValues="{! v.draftValues }"
+                                         onrowselection="{!c.handleRowSelection}"
+                                         onrowaction="{! c.handleRowAction }"
+                                         onsave="{! c.handleSaveEdition }"
+                                         oncancel="{! c.handleCancel }"/>
+                </div>
+            </div>
+            
+            <!--<div class="slds-size_1-of-1 slds-p-top_medium">
+                <aura:if isTrue="{!v.isEdit || v.isDelete || v.isChangeState}">
+                    <aura:if isTrue="{!v.isDelete}">
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleDeleteSelectedRecords}">Delete</button>
+                    </aura:if>
+                    <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCancel}">Cancel</button>
+                    
+                    <aura:set attribute="else">
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleEditSUTA}">Edit SUTA</button>
+                        <button class="slds-button slds-button_neutral slds-m-left_xx-small" type="button" onclick="{!c.handleDeleteSUTA}">Delete SUTA</button>
+                    </aura:set>
+                </aura:if>
+            	
+            </div>-->
+            
+        </div>
+        
+        <aura:if isTrue="{!v.isShowDeleteModal}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                <div class="slds-modal__container">
+                    <lightning:spinner aura:id="deletemodalspinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.handleCancelDeleteRecords}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Confirm Delete SUTA</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <aura:unescapedHtml value="{!$Label.c.SUTAQuoteDeleteInfoMsg}"/>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCancelDeleteRecords}">Cancel</button>
+                        <button class="slds-button slds-button_brand" type="button" onclick="{!c.handleDeleteRecords}">Continue</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+
+        <aura:if isTrue="{!v.isShowEditModal}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                <div class="slds-modal__container">
+                    <lightning:spinner aura:id="modalspinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.handleRecordEditCancel}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Edit {!v.selectedRecordName}</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <lightning:recordEditForm   recordId="{!v.selectedRecordId}" 
+                                                    objectApiName="SUTA_Quote__c"
+                                                    onsuccess="{!c.handleSuccessQuoteRecord}"
+                                                    onerror="{!c.handleErrorQuoteRecord}"
+                                                    aura:id="editForm">
+                            <lightning:messages />
+                            <div class="slds-grid slds-wrap">
+                                <div class="slds-size_1-of-2">
+                                    <lightning:select value="{!v.selectedSUTA}" aura:id="suta" name="suta" label="SUTA">
+                                        <option value="">--None--</option>
+                                        <aura:iteration items="{!v.mapSUTAOptions}" var="ind" indexVar="key">
+                                            <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==v.selectedSUTA}" />
+                                        </aura:iteration>
+                                    </lightning:select>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                	<lightning:inputField fieldName="SUTA_Cost_Rate__c" aura:id="SUTA_Cost_Rate" disabled="true"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="SUTA_Bill_Rate__c" aura:id="SUTA_Bill_Rate"/>
+                                </div>
+                            </div>
+                        </lightning:recordEditForm>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleRecordEditCancel}">Cancel</button>
+                        <button class="slds-button slds-button_brand" type="button" onclick="{!c.handleEditQuoteRecord}">Save</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        
+    </div>
+    
+</aura:component>

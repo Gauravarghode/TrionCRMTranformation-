@@ -1,0 +1,335 @@
+<apex:page standardController="Employee__c" extensions="DIR_EmployeeDetailCtrl" standardStylesheets="false" applyBodyTag="false" docType="html-5.0">
+    <apex:pageMessages />
+    <html lang="en" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <head>
+            <meta charset="utf-8" />
+            <meta http-equiv="x-ua-compatible" content="ie=edge" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            
+            <title>Employee Detail</title>
+            
+            <apex:slds />
+        </head>
+        <style>
+            
+            .employeeDetail .photoBoxCSS img{
+            padding: 0.5rem !important;
+            border-radius: .25rem !important;
+            border: 1px solid rgb(221, 219, 218);
+            max-height: 200px !important;
+            height: 200px !important;
+            width: 12rem !important;
+            }
+            
+            .employeeDetail .NoPhotoBoxCSS{
+            border-radius: .25rem !important;
+            border: 1px solid rgb(221, 219, 218);
+            background: #aad6e4 !important;
+            height: 200px !important;
+            width: 12rem !important;
+            }
+            
+            .employeeDetail .NoPhotoBoxCSS img{
+            padding: 0.5rem !important;
+            border-radius: .25rem !important;
+            border: none !important;
+            padding-left: 2rem !important;
+            padding-right: 2rem !important;
+            }
+            
+            .employeeDetail .NoPhotoBoxCSS label{
+            font-size: 1.2rem !important;
+            }
+            
+            .employeePersonalDetailsCSS table th{
+                width: 30% !important;
+            }
+            
+            .employeePersonalDetailsCSS table td,th{
+            padding:  0.3% !important;
+            vertical-align: middle;
+            }
+            
+            .employeeDetail .reportsToSection .slds-avatar_circle{
+            width: 4rem !important;
+            height: 4rem !important;
+            background: #aad6e4 !important;
+            }
+            
+            .employeeDetail .reportsToSection .slds-post__header{
+            margin-top: 0.25rem !important;
+            margin-bottom: 0.25rem !important;
+            }
+        </style>
+        <body class="slds-scope">
+            <c:DIR_Design >
+                <div class="container">
+                    <!--<c:DIR_Header />-->
+                    <div>
+                        <div class="employeeDetail">
+                            <!--<div style="margin:2%;"></div>-->
+                            <article class="slds-card slds-theme_default" >
+                                <div class="slds-card__body slds-card__body_inner">
+                                    <ul class="slds-grid slds-wrap slds-grid_pull-padded">
+                                        <li class="slds-p-horizontal_medium slds-size_1-of-1 slds-medium-size_6-of-8">
+                                            <div class="officeLocationHeaderCSS">
+                                                <apex:sectionHeader title="Employee" subtitle="{!emp.Last_Name__c}, {!emp.First_Name__c}" />
+                                            </div>
+                                        </li>
+                                        <li class="slds-p-horizontal_medium slds-size_1-of-1 slds-medium-size_2-of-8" style="margin-top:2%;text-align: right;">
+                                            <apex:commandLink action="{!doReturnToDirectory}" value="Return to Directory" styleClass="slds-button slds-button--neutral" />
+                                        </li>
+                                    </ul>
+                                    
+                                    <fieldset class="slds-box slds-theme--default">                
+                                        <legend class="customLegendCSS slds-text-heading--small">
+                                            &nbsp;<b>Personal Details</b>&nbsp;
+                                        </legend>
+                                        
+                                        <ul class="slds-grid slds-wrap slds-grid_pull-padded">
+                                            <li class="slds-align_absolute-center slds-p-horizontal_medium slds-size_1-of-1 slds-medium-size_2-of-6" style="margin-bottom:1.5%;">
+                                                <div class="photoBoxCSS slds-align_absolute-center">
+                                                    <apex:outputPanel rendered="{!FileId != null && FileId != ''}">
+                                                        <apex:image url="/sfc/servlet.shepherd/version/download/{!FileId}" alt="Image Not Available" width="100%;" />
+                                                    </apex:outputPanel>
+                                                    
+                                                    <apex:outputPanel rendered="{!FileId == null || FileId == ''}">
+                                                        <apex:outputPanel rendered="{!emp.Salutation__c == 'Mr.'}">
+                                                            <img src="{!URLFOR($Resource.SLDS, '/images/avatar1.jpg')}" />
+                                                        </apex:outputPanel>
+                                                        <apex:outputPanel rendered="{!emp.Salutation__c == 'Ms.' || emp.Salutation__c == 'Mrs.'}">
+                                                            <img src="{!URLFOR($Resource.SLDS, '/images/avatar2.jpg')}" />
+                                                        </apex:outputPanel>
+                                                        <apex:outputPanel rendered="{!emp.Salutation__c != 'Mr.' && emp.Salutation__c != 'Ms.' && emp.Salutation__c != 'Mrs.'}">
+                                                            <div class="NoPhotoBoxCSS slds-align_absolute-center">
+                                                                <img src="{!URLFOR($Resource.SLDS, '/icons/standard/avatar_120.png')}" />
+                                                            </div>
+                                                        </apex:outputPanel>
+                                                    </apex:outputPanel>
+                                                </div>
+                                            </li>
+                                            <li class="slds-p-horizontal_medium slds-size_1-of-1 slds-medium-size_4-of-6" style="margin-bottom:1%;">
+                                                
+                                                <div class="employeePersonalDetailsCSS">
+                                                    <table id="forEmployeeDetails">
+                                                        <tr>
+                                                            <th><label class="slds-text-heading_small">Name:</label></th>
+                                                            <td><label class="slds-text-heading_small">{!emp.Last_Name__c}, {!emp.First_Name__c}</label></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th><label class="slds-text-heading_small">Office Location:</label></th>
+                                                            <td>
+                                                                <label class="slds-text-heading_small">
+                                                                    <a href="{!URLFOR($Page.DIR_OfficeLocationDetail, null, [id=emp.Location__c])}">{!emp.Location__r.Name}</a>
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th><label class="slds-text-heading_small">Department:</label></th>
+                                                            <td>
+                                                                <label class="slds-text-heading_small">
+                                                                    <a href="{!URLFOR($Page.DIR_DepartmentDetail, null, [id=emp.Department__c])}" >{!emp.Department__r.Name}</a>
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th><label class="slds-text-heading_small">Title:</label></th>
+                                                            <td><label class="slds-text-heading_small">{!emp.Title__c}</label></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <!--<th><label class="slds-text-heading_small">Office Phone:</label></th>-->
+                                                            <th>
+                                                                <div class="slds-icon_container topStripCSS iconsborderRadiusCSS">
+                                                                    <img src="{!URLFOR($Resource.SLDS, '/icons/custom/custom22_120.png')}" title="Office Phone" 
+                                                                         class="slds-icon slds-icon_small" />
+                                                                </div>
+                                                            </th>
+                                                            <td><label class="slds-text-heading_small">{!emp.Office_Phone__c}</label></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <!--<th><label class="slds-text-heading_small">Office Email:</label></th>-->
+                                                            <th>
+                                                                <div class="slds-icon_container leftStripCSS iconsborderRadiusCSS">
+                                                                    <img src="{!URLFOR($Resource.SLDS, '/icons/custom/custom23_120.png')}" title="Office Email" 
+                                                                         class="slds-icon slds-icon_small" />
+                                                                </div>
+                                                            </th>
+                                                            <td><a href="{! 'mailto:' + emp.Office_Email__c}" class="emailLinksCSS">{!emp.Office_Email__c}</a></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <!--<th><label class="slds-text-heading_small">Mobile Phone:</label></th>-->
+                                                            <th>
+                                                                <div class="slds-icon_container rightStripCSS iconsborderRadiusCSS">
+                                                                    <img src="{!URLFOR($Resource.SLDS, '/icons/custom/custom28_120.png')}" title="Mobile Phone" 
+                                                                         class="slds-icon slds-icon_small" />
+                                                                </div>
+                                                            </th>
+                                                            <td><label class="slds-text-heading_small">{!emp.Mobile_Phone__c}</label></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>
+                                                                <div class="slds-icon_container stripUnderTopStripCSS iconsborderRadiusCSS">
+                                                                    <img src="{!URLFOR($Resource.SLDS, '/icons/utility/print_120.png')}" title="Fax" 
+                                                                         class="slds-icon slds-icon_small" />
+                                                                </div>
+                                                            </th>
+                                                            <td><label class="slds-text-heading_small">{!emp.Fax__c}</label></td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </fieldset>
+                                    
+                                    <ul class="slds-grid slds-wrap slds-grid_pull-padded">
+                                        <li class="slds-p-horizontal_medium slds-size_1-of-1 slds-medium-size_1-of-1" style="margin-top:1%;">
+                                            <fieldset class="slds-box slds-theme--default">                
+                                                <legend class="customLegendCSS slds-text-heading--small">
+                                                    &nbsp;<b>Employee Bio</b>&nbsp;
+                                                </legend>
+                                                <div>
+                                                    <label class="slds-text-heading_small">{!emp.Employee_Bio__c}</label>
+                                                </div>
+                                            </fieldset>
+                                        </li>
+                                    </ul>
+                                    
+                                    <ul class="slds-grid slds-wrap slds-grid_pull-padded">
+                                        <li class="slds-p-horizontal_medium slds-size_1-of-1 slds-medium-size_1-of-1" style="margin-top:1%;">
+                                            <fieldset class="slds-box slds-theme--default">                
+                                                <legend class="customLegendCSS slds-text-heading--small">
+                                                    &nbsp;<b>Reports To</b>&nbsp;
+                                                </legend>
+                                                
+                                                <div>
+                                                    <apex:outputPanel rendered="{!!isShowReportsTo}">
+                                                        <label class="slds-text-heading_small">{!$Label.DIR_No_Reports_To}</label>
+                                                    </apex:outputPanel>
+                                                    <apex:outputPanel rendered="{!isShowReportsTo}">
+                                                        <ul class="reportsToSection slds-card__body_inner slds-grid slds-wrap">
+                                                            <li class="slds-p-horizontal_medium slds-size_1-of-1 slds-medium-size_1-of-1">
+                                                                <header class="slds-post__header slds-media">
+                                                                    <div class="slds-media__figure slds-align_absolute-center">
+                                                                        <div class="slds-align_absolute-center">
+                                                                            <apex:outputPanel rendered="{!reportEmployeeFileId != null && reportEmployeeFileId != ''}">
+                                                                                <div class="slds-avatar slds-avatar_circle slds-avatar_large">
+                                                                                    <apex:image url="/sfc/servlet.shepherd/version/download/{!reportEmployeeFileId}" alt="Image Not Available" width="100%;"
+                                                                                                title="{!reportToEmployee.Last_Name__c}, {!reportToEmployee.First_Name__c}" />
+                                                                                </div>
+                                                                            </apex:outputPanel>
+                                                                            
+                                                                            <apex:outputPanel rendered="{!reportEmployeeFileId == null || reportEmployeeFileId == ''}">
+                                                                                <div class="slds-avatar slds-avatar_circle slds-avatar_large">
+                                                                                    <apex:outputPanel rendered="{!reportToEmployee.Salutation__c == 'Mr.'}">
+                                                                                        <img src="{!URLFOR($Resource.SLDS, '/images/avatar1.jpg')}" alt="Image Not Available" />
+                                                                                    </apex:outputPanel>
+                                                                                    <apex:outputPanel rendered="{!reportToEmployee.Salutation__c == 'Ms.' || reportToEmployee.Salutation__c == 'Mrs.'}">
+                                                                                        <img src="{!URLFOR($Resource.SLDS, '/images/avatar2.jpg')}" alt="Image Not Available" />
+                                                                                    </apex:outputPanel>
+                                                                                    <apex:outputPanel rendered="{!reportToEmployee.Salutation__c != 'Mr.' && reportToEmployee.Salutation__c != 'Ms.' && reportToEmployee.Salutation__c != 'Mrs.'}">
+                                                                                        <img src="{!URLFOR($Resource.SLDS, '/icons/standard/avatar_120.png')}" alt="Image Not Available" />
+                                                                                    </apex:outputPanel>
+                                                                                </div>
+                                                                            </apex:outputPanel>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="slds-media__body">
+                                                                        <div class="slds-grid slds-grid_align-spread slds-has-flexi-truncate">
+                                                                            <p class="slds-text-heading_small">
+                                                                                <a href="{!URLFOR($Page.DIR_EmployeeDetail, null, [id=reportToEmployee.Id])}" title="{!reportToEmployee.Last_Name__c}, {!reportToEmployee.First_Name__c}">
+                                                                                    {!reportToEmployee.Last_Name__c}, {!reportToEmployee.First_Name__c}
+                                                                                </a>
+                                                                            </p>
+                                                                        </div>
+                                                                        <p class="slds-text-body_small"><b>Title: </b>{!reportToEmployee.Title__c}</p>
+                                                                        <p class="slds-text-body_small">
+                                                                            <b>Department: </b>
+                                                                            <a href="{!URLFOR($Page.DIR_DepartmentDetail, null, [id=reportToEmployee.Department__c])}" >{!reportToEmployee.Department__r.Name}</a>
+                                                                        </p> 
+                                                                        <p class="slds-text-body_small">
+                                                                            <b>Office Location: </b>
+                                                                            <a href="{!URLFOR($Page.DIR_OfficeLocationDetail, null, [id=reportToEmployee.Location__c])}" >{!reportToEmployee.Location__r.Name}</a>
+                                                                        </p>
+                                                                    </div>
+                                                                </header>
+                                                                <br/>
+                                                                
+                                                                <apex:outputPanel rendered="{!isShowReportsToEmployees}">
+                                                                    <div style="border: 1px solid rgb(221, 219, 218); margin-bottom: 1%; border-radius: 0.25rem;"></div>
+                                                                    <table class="reportsToSection slds-table slds-table_cell-buffer slds-table_striped">
+                                                                        <tbody>
+                                                                            <apex:repeat value="{!lstReportsToEmployees}" var="wr">
+                                                                                <tr>
+                                                                                    <td style="vertical-align: middle; width: 6%; padding-left: 1% !important;">
+                                                                                        <div class="slds-icon_container">
+                                                                                            <img src="{!URLFOR($Resource.SLDS, '/icons/utility/forward_120.png')}" class="slds-icon slds-icon_small" />
+                                                                                        </div>
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <header class="slds-post__header slds-media">
+                                                                                            <div class="slds-media__figure slds-align_absolute-center">
+                                                                                                <div class="slds-align_absolute-center">
+                                                                                                    <apex:outputPanel rendered="{!wr.FileId != null && wr.FileId != ''}">
+                                                                                                        <div class="slds-avatar slds-avatar_circle slds-avatar_large">
+                                                                                                            <apex:image url="/sfc/servlet.shepherd/version/download/{!wr.FileId}" alt="Image Not Available" width="100%;"
+                                                                                                                        title="{!wr.employee.Last_Name__c}, {!wr.employee.First_Name__c}" />
+                                                                                                        </div>
+                                                                                                    </apex:outputPanel>
+                                                                                                    
+                                                                                                    <apex:outputPanel rendered="{!wr.FileId == null || wr.FileId == ''}">
+                                                                                                        <div class="slds-avatar slds-avatar_circle slds-avatar_large">
+                                                                                                            <apex:outputPanel rendered="{!wr.employee.Salutation__c == 'Mr.'}">
+                                                                                                                <img src="{!URLFOR($Resource.SLDS, '/images/avatar1.jpg')}" alt="Image Not Available" />
+                                                                                                            </apex:outputPanel>
+                                                                                                            <apex:outputPanel rendered="{!wr.employee.Salutation__c == 'Ms.' || wr.employee.Salutation__c == 'Mrs.'}">
+                                                                                                                <img src="{!URLFOR($Resource.SLDS, '/images/avatar2.jpg')}" alt="Image Not Available" />
+                                                                                                            </apex:outputPanel>
+                                                                                                            <apex:outputPanel rendered="{!wr.employee.Salutation__c != 'Mr.' && wr.employee.Salutation__c != 'Ms.' && wr.employee.Salutation__c != 'Mrs.'}">
+                                                                                                                <img src="{!URLFOR($Resource.SLDS, '/icons/standard/avatar_120.png')}" alt="Image Not Available" />
+                                                                                                            </apex:outputPanel>
+                                                                                                        </div>
+                                                                                                    </apex:outputPanel>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            <div class="slds-media__body">
+                                                                                                <div class="slds-grid slds-grid_align-spread slds-has-flexi-truncate">
+                                                                                                    <p class="slds-text-heading_small">
+                                                                                                        <a href="{!URLFOR($Page.DIR_EmployeeDetail, null, [id=wr.employee.Id])}" title="{!wr.employee.Last_Name__c}, {!wr.employee.First_Name__c}">
+                                                                                                            {!wr.employee.Last_Name__c}, {!wr.employee.First_Name__c}
+                                                                                                        </a>
+                                                                                                    </p>
+                                                                                                </div>
+                                                                                                <p class="slds-text-body_small"><b>Title: </b>{!wr.employee.Title__c}</p>
+                                                                                                <p class="slds-text-body_small">
+                                                                                                    <b>Department: </b>
+                                                                                                    <a href="{!URLFOR($Page.DIR_DepartmentDetail, null, [id=wr.employee.Department__c])}" >{!wr.employee.Department__r.Name}</a>
+                                                                                                </p>
+                                                                                                <p class="slds-text-body_small">
+                                                                                                    <b>Office Location: </b>
+                                                                                                    <a href="{!URLFOR($Page.DIR_OfficeLocationDetail, null, [id=wr.employee.Location__c])}" >{!wr.employee.Location__r.Name}</a>
+                                                                                                </p>
+                                                                                            </div>
+                                                                                        </header>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            </apex:repeat>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </apex:outputPanel>
+                                                            </li>
+                                                        </ul>
+                                                    </apex:outputPanel>
+                                                </div>
+                                            </fieldset>
+                                        </li>
+                                    </ul>
+                                    
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                </div>
+            </c:DIR_Design>
+        </body>
+    </html>
+</apex:page>

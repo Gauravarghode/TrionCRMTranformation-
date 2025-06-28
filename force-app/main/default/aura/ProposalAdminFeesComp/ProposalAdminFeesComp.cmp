@@ -1,0 +1,444 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" 
+                access="global"
+                controller="ProposalAdminFeesCompCtrl">
+	<!--attribute-->
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="oProposal" type="Proposal__c"/>
+    <aura:attribute name="isShowAdminFeesModal" type="boolean" default="false"/>
+    <aura:attribute name="mapAdministrativeFeeType" type="Map"/>
+    <aura:attribute name="mapDeliveryFeePerLocation" type="Map"/>
+    <aura:attribute name="mapPerCheckFrequency" type="Map"/>
+    <aura:attribute name="buttonvisibilitysoqlFilter" type="String"/>
+    <aura:attribute name="isButtonVisible" type="Boolean" default="true"/>
+    
+    
+    <!--handler-->
+	<aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+     <!--markup-->
+    <div>
+        <!--spinner-->
+        <lightning:spinner aura:id="spinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+        
+        <div class="slds-grid slds-wrap">
+            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small slds-text-heading_small">
+                <b><u>Service Charges and Fees</u></b>
+            </div>
+            
+            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small" style="overflow: overlay;">
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                    <thead>
+                        <tr class="slds-line-height_reset">
+                            <th class="" scope="col">
+                                <div class="slds-truncate">
+                                    {!$Label.c.ProposalAdminFeesTypeHeader}
+                                </div>
+                            </th>
+                            <th class="" scope="col">
+                                <div class="slds-truncate">
+                                    {!$Label.c.ProposalAdminFeesValueHeader}
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="slds-hint-parent">
+                            <th scope="row">
+                                <div class="slds-truncate">
+                                    {!'Administrative Fee: '+v.oProposal.Administrative_Fee_Type__c}
+                                </div>
+                            </th>
+                            <td>
+                                <div class="slds-truncate">
+                                    <aura:if isTrue="{!v.oProposal.Administrative_Fee_Type__c=='Gross Wages'}">
+                                    	<lightning:formattedNumber value="{!v.oProposal.Admin_Fee_Gross_Wages__c}" style="percent-fixed" maximumFractionDigits="2"/>
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.oProposal.Administrative_Fee_Type__c=='Annual'}">
+                                        <lightning:formattedNumber value="{!v.oProposal.Admin_Fee_Annual__c}" 
+                                                                   style="currency" 
+                                                                   currencyCode="USD" 
+                                                                   minimumFractionDigits="2" 
+                                                                   maximumFractionDigits="2"/>
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.oProposal.Administrative_Fee_Type__c=='Per Check'}">
+                                        <lightning:formattedNumber value="{!v.oProposal.Admin_Fee_Per_Check__c}" 
+                                                                   style="currency" 
+                                                                   currencyCode="USD" 
+                                                                   minimumFractionDigits="2" 
+                                                                   maximumFractionDigits="2"/>
+                                    </aura:if>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="slds-hint-parent">
+                            <th scope="row">
+                                <div class="slds-truncate">
+                                    Delivery Fee Per Location
+                                </div>
+                            </th>
+                            <td>
+                                <div class="slds-truncate">
+                                    <aura:if isTrue="{!v.oProposal.Delivery_Fee_Per_Location__c == 'Amount'}">
+                                        <lightning:formattedNumber value="{!v.oProposal.Delivery_Fee__c}" 
+                                                                   style="currency" 
+                                                                   currencyCode="USD" 
+                                                                   minimumFractionDigits="2" 
+                                                                   maximumFractionDigits="2"/>
+                                        <aura:set attribute="else">
+                                            Cost 
+                                        </aura:set>
+                                    </aura:if>
+                                	
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="slds-hint-parent">
+                            <th scope="row">
+                                <div class="slds-truncate">
+                                    Security Deposit
+                                </div>
+                            </th>
+                            <td>
+                                <div class="slds-truncate">
+                                	{!(v.oProposal.Security_Deposit_Waived__c?'Waived':v.oProposal.Security_Deposit__c)}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="slds-hint-parent">
+                            <th scope="row">
+                                <div class="slds-truncate">
+                                    Client Set-Up Fee
+                                </div>
+                            </th>
+                            <td>
+                                <div class="slds-truncate">
+                                    {!(v.oProposal.Client_Set_up_Fee_Waived__c?'Waived':v.oProposal.Client_Set_up_Fee__c)}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="slds-hint-parent">
+                            <th scope="row">
+                                <div class="slds-truncate">
+                                    Employee New Hire Fee (Per Employee)
+                                </div>
+                            </th>
+                            <td>
+                                <div class="slds-truncate">
+                                    {!(v.oProposal.Employee_New_Hire_Fee_Waived__c?'Waived':v.oProposal.Employee_New_Hire_Fee_Per_Employee__c)}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="slds-hint-parent">
+                            <th scope="row">
+                                <div class="slds-truncate">
+                                    Replacement Check Fee
+                                </div>
+                            </th>
+                            <td>
+                                <div class="slds-truncate">
+                                    <lightning:formattedNumber value="{!v.oProposal.Replacement_Check_Fee__c}" 
+                                                               style="currency" 
+                                                               currencyCode="USD" 
+                                                               minimumFractionDigits="2" 
+                                                               maximumFractionDigits="2"/>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="slds-hint-parent">
+                            <th scope="row">
+                                <div class="slds-truncate">
+                                    NSF Check or Reversed ACH Fee
+                                </div>
+                            </th>
+                            <td>
+                                <div class="slds-truncate">
+                                    <lightning:formattedNumber value="{!v.oProposal.NSF_Check_or_Reversed_ACH_Fee__c}" 
+                                                               style="currency" 
+                                                               currencyCode="USD" 
+                                                               minimumFractionDigits="2" 
+                                                               maximumFractionDigits="2"/>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="slds-hint-parent">
+                            <th scope="row">
+                                <div class="slds-truncate">
+                                    Employment Practice Liability Insurance (EPLI)
+                                </div>
+                            </th>
+                            <td>
+                                <div class="slds-truncate">
+                                	{!(v.oProposal.EPLI_Waived__c?'Waived':v.oProposal.Employment_Practice_Liability_Insurance__c)}
+                                </div>
+                            </td>
+                        </tr>
+                        <aura:if isTrue="{!v.oProposal.EPLI_Waived__c == false}">
+                            <tr class="slds-hint-parent">
+                                <th scope="row">
+                                    <div class="slds-truncate">
+                                        EPLI Deductible
+                                    </div>
+                                </th>
+                                <td>
+                                    <div class="slds-truncate">
+                                        <aura:if isTrue="{!v.oProposal.EPLI_50_000_Deductible_Waived__c == true}">
+                                        	Waived
+                                            <aura:set attribute="else">
+                                                <lightning:formattedNumber value="{!v.oProposal.EPLI_50_000_Deductible__c}" 
+                                                                           style="currency" 
+                                                                           currencyCode="USD" 
+                                                                           minimumFractionDigits="2" 
+                                                                           maximumFractionDigits="2"/>
+                                            </aura:set>
+                                        </aura:if>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="slds-hint-parent">
+                                <th scope="row">
+                                    <div class="slds-truncate">
+                                        EPLI (Maximum Coverage Limit Per Claim)
+                                    </div>
+                                </th>
+                                <td>
+                                    <div class="slds-truncate">
+                                        <lightning:formattedNumber value="{!v.oProposal.EPLI_Maximum_Coverage_Limit_Per_Claim__c}" 
+                                                                   style="currency" 
+                                                                   currencyCode="USD" 
+                                                                   minimumFractionDigits="2" 
+                                                                   maximumFractionDigits="2"/>
+                                    </div>
+                                </td>
+                            </tr>
+                        </aura:if>
+                        <tr class="slds-hint-parent">
+                            <th scope="row">
+                                <div class="slds-truncate">
+                                   WC Claims Fee: Maximum Per Claim
+                                </div>
+                            </th>
+                            <td>
+                                <div class="slds-truncate">
+                                	{!(v.oProposal.Worker_s_Compensation_Claims_Fee_waived__c?'Waived':v.oProposal.Worker_s_Compensation_Claims_Fee_Max__c)}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="slds-hint-parent">
+                            <th scope="row">
+                                <div class="slds-truncate">
+                                   WC Claims Fee Deposit
+                                </div>
+                            </th>
+                            <td>
+                                <div class="slds-truncate">
+                                	{!(v.oProposal.Worker_s_Comp_Claims_Fee_Deposit_Waived__c?'Waived':v.oProposal.Worker_s_Compensation_Claims_Fee_Deposit__c)}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="slds-hint-parent">
+                            <th scope="row">
+                                <div class="slds-truncate">
+                                   Termination Fee Per Employee
+                                </div>
+                            </th>
+                            <td>
+                                <div class="slds-truncate">
+                                	{!v.oProposal.Conga_Termination_Fee_Per_Employee__c}
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                <aura:if isTrue="{!v.isButtonVisible}">
+            		<button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleShowEditAdminModal}">Edit Admin Fees</button>
+                </aura:if>
+            </div>
+            
+        </div>
+        
+        <!--modal-->
+        <aura:if isTrue="{!v.isShowAdminFeesModal}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_medium" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                <!--spinner-->
+        		<lightning:spinner aura:id="modalspinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+        
+                
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.handleCloseEditAdminModal}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Edit Admin Fees</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <div class="slds-grid slds-wrap">
+                            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                <lightning:select aura:id="adminFeeType" value="{!v.oProposal.Administrative_Fee_Type__c}" name="adminFeeType" label="Admin Fee Type" required="true">
+                                    <option value="">--None--</option>
+                                    <aura:iteration items="{!v.mapAdministrativeFeeType}" var="ind" indexVar="index">
+                                        <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==v.oProposal.Administrative_Fee_Type__c}" />
+                                    </aura:iteration>
+                                </lightning:select>
+                            </div>
+                            
+                            <aura:if isTrue="{!v.oProposal.Administrative_Fee_Type__c == 'Gross Wages'}">
+                                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                    <lightning:input type="checkbox" label="Override Admin Fee" checked="{!v.oProposal.Override_Gross_Wages_Admin_Fee__c}"/>
+                                </div>
+                                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                    <lightning:input type="number" label="Admin Fee (% Gross Wages)" value="{!v.oProposal.Admin_Fee_Gross_Wages__c }" formatter="percent-fixed" step="0.01" required="true" aura:id="Admin_Fee_Gross_Wages"/>
+                                </div>
+                            </aura:if>
+                            
+                            <aura:if isTrue="{!v.oProposal.Administrative_Fee_Type__c == 'Per Check'}">
+                                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                    <lightning:select aura:id="perCheckFrequency" value="{!v.oProposal.Per_Check_Frequency__c}" name="perCheckFrequency" label="Per Check Frequency" required="true">
+                                        <option value="">--None--</option>
+                                        <aura:iteration items="{!v.mapPerCheckFrequency}" var="ind" indexVar="index">
+                                            <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==v.oProposal.Per_Check_Frequency__c}" />
+                                        </aura:iteration>
+                                    </lightning:select>
+                                </div>
+                                
+                                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                	<lightning:input type="number" label="Admin Fee (Per Check $)" value="{!v.oProposal.Admin_Fee_Per_Check__c}" formatter="currency" step="0.01" required="true" aura:id="Admin_Fee_Per_Check"/>
+                                </div>
+                            </aura:if>
+                            
+                            <aura:if isTrue="{!v.oProposal.Administrative_Fee_Type__c == 'Annual'}">
+                                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                    <lightning:input type="number" label="Admin Fee (Annual $)" value="{!v.oProposal.Admin_Fee_Annual__c}" formatter="currency" step="0.01" required="true" aura:id="Admin_Fee_Annual"/>
+                                </div>
+                            </aura:if>
+                            
+                            
+                            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                <lightning:select aura:id="deliverFeePerLocation" value="{!v.oProposal.Delivery_Fee_Per_Location__c}" name="deliverFeePerLocation" label="Deliver Fee Per Location" required="true">
+                                    <option value="">--None--</option>
+                                    <aura:iteration items="{!v.mapDeliveryFeePerLocation}" var="ind" indexVar="index">
+                                        <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==v.oProposal.Delivery_Fee_Per_Location__c}" />
+                                    </aura:iteration>
+                                </lightning:select>
+                            </div>
+                            
+                            <aura:if isTrue="{!v.oProposal.Delivery_Fee_Per_Location__c == 'Amount'}">
+                                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                    <lightning:input type="number" label="Delivery Fee Amount" value="{!v.oProposal.Delivery_Fee__c}" formatter="currency" step="0.01" required="true" aura:id="Delivery_Fee"/>
+                                </div>
+                            </aura:if>
+                            
+                            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                            	<lightning:input type="checkbox" label="Security Deposit Waived" checked="{!v.oProposal.Security_Deposit_Waived__c}"/>
+                            </div>
+                            
+                            <aura:if isTrue="{!v.oProposal.Security_Deposit_Waived__c == false}">
+                                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                	<lightning:input type="number" label="Security Deposit" value="{!v.oProposal.Security_Deposit__c}" formatter="currency" step="0.01" required="true" aura:id="Security_Deposit"/>
+                                </div>
+                            </aura:if>
+                            
+                            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                            	<lightning:input type="checkbox" label="Client Set-up Fee Waived" checked="{!v.oProposal.Client_Set_up_Fee_Waived__c}"/>
+                            </div>
+                            
+                            <aura:if isTrue="{!v.oProposal.Client_Set_up_Fee_Waived__c == false}">
+                                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                	<lightning:input type="number" label="Client Set-up Fee" value="{!v.oProposal.Client_Set_up_Fee__c}" formatter="currency" step="0.01" required="true" aura:id="Client_Set_up_Fee"/>
+                                </div>
+                            </aura:if>
+                            
+                            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                            	<lightning:input type="checkbox" label="Employee New Hire Fee Waived" checked="{!v.oProposal.Employee_New_Hire_Fee_Waived__c}"/>
+                            </div>
+                            
+                            <aura:if isTrue="{!v.oProposal.Employee_New_Hire_Fee_Waived__c == false}">
+                                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                	<lightning:input type="number" label="Employee New Hire Fee" value="{!v.oProposal.Employee_New_Hire_Fee_Per_Employee__c}" formatter="currency" step="0.01" required="true" aura:id="Employee_New_Hire_Fee_Per_Employee"/>
+                                </div>
+                            </aura:if>
+                            
+                            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                            	<lightning:input type="checkbox" label="EPLI Waived" checked="{!v.oProposal.EPLI_Waived__c}"/>
+                            </div>
+                            
+                            <aura:if isTrue="{!v.oProposal.EPLI_Waived__c == false}">
+                                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                    <lightning:input type="number" label="Employment Practice Liability Insurance (%)" value="{!v.oProposal.Employment_Practice_Liability_Insurance__c}" formatter="percent-fixed" step="0.01" required="true" aura:id="Employment_Practice_Liability_Insurance"/>
+                                </div>
+                                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                    <lightning:input type="number" label="EPLI (Maximum Coverage Limit Per Claim)" value="{!v.oProposal.EPLI_Maximum_Coverage_Limit_Per_Claim__c}" formatter="currency" step="0.01" required="true" aura:id="EPLI_Maximum_Coverage_Limit_Per_Claim"/>
+                                </div>
+                            </aura:if>
+                            
+                            <aura:if isTrue="{!v.oProposal.EPLI_Waived__c == false}">
+                                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                    <lightning:input type="checkbox" label="EPLI $50,000 Deductible Waived" checked="{!v.oProposal.EPLI_50_000_Deductible_Waived__c}"/>
+                                </div>
+                                
+                                <aura:if isTrue="{!v.oProposal.EPLI_50_000_Deductible_Waived__c == false}">
+                                    <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                        <lightning:input type="number" label="EPLI $50,000 Deductible" value="{!v.oProposal.EPLI_50_000_Deductible__c}" formatter="currency" step="0.01" required="true" aura:id="EPLI_50_000_Deductible"/>
+                                    </div>
+                                </aura:if>
+                            </aura:if>
+                            
+                            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                            	<lightning:input type="checkbox" label="Worker's Compensation Claims Fee: waived" checked="{!v.oProposal.Worker_s_Compensation_Claims_Fee_waived__c}"/>
+                            </div>
+                            
+                            <aura:if isTrue="{!v.oProposal.Worker_s_Compensation_Claims_Fee_waived__c == false}">
+                                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                	<lightning:input type="number" label="Worker's Compensation Claims Fee: Max" value="{!v.oProposal.Worker_s_Compensation_Claims_Fee_Max__c}" formatter="currency" step="0.01" required="true" aura:id="Worker_s_Compensation_Claims_Fee_Max"/>
+                                </div>
+                            </aura:if>
+                            
+                            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                            	<lightning:input type="checkbox" label="Worker's Comp Claims Fee Deposit: Waived" checked="{!v.oProposal.Worker_s_Comp_Claims_Fee_Deposit_Waived__c}"/>
+                            </div>
+                            
+                            <aura:if isTrue="{!v.oProposal.Worker_s_Comp_Claims_Fee_Deposit_Waived__c == false}">
+                                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                	<lightning:input type="number" label="Worker's Compensation Claims Fee Deposit" value="{!v.oProposal.Worker_s_Compensation_Claims_Fee_Deposit__c}" formatter="currency" step="0.01"  required="true" aura:id="Worker_s_Compensation_Claims_Fee_Deposit"/>
+                                </div>
+                            </aura:if>
+                            
+                            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                            	<lightning:input type="checkbox" label="Termination Fee Per Employee: Waived" checked="{!v.oProposal.Termination_Fee_Per_Employee_Waived__c}"/>
+                            </div>
+                            
+                            <aura:if isTrue="{!v.oProposal.Termination_Fee_Per_Employee_Waived__c == false}">
+                                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                	<lightning:input type="number" label="Termination Fee Per Employee" value="{!v.oProposal.Termination_Fee_Per_Employee__c}" formatter="currency" step="0.01"/>
+                                </div>
+                                <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                	<lightning:input type="number" label="Termination Fee Per Employee: Percentage" value="{!v.oProposal.Termination_Fee_Per_Employee_Percentage__c}" formatter="currency" step="0.01"/>
+                                </div>
+                            </aura:if>
+                            
+                            
+                            
+                            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                <lightning:input type="number" label="Replacement Check Fee" value="{!v.oProposal.Replacement_Check_Fee__c}" formatter="currency" step="0.01" required="true" aura:id="Replacement_Check_Fee"/>
+                            </div>
+                            
+                            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                                <lightning:input type="number" label="NSF Check or Reversed ACH Fee" value="{!v.oProposal.NSF_Check_or_Reversed_ACH_Fee__c}" formatter="currency" step="0.01" required="true" aura:id="NSF_Check_or_Reversed_ACH_Fee"/>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_brand" type="button" onclick="{!c.handleSaveEditAdminModal}">Save</button>
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCloseEditAdminModal}">Cancel</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        
+    </div>
+</aura:component>

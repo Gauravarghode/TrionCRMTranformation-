@@ -1,0 +1,14 @@
+<template>
+    <template for:each={stars} for:item="star">
+        <lightning-icon
+            key={star.Index}
+            icon-name="utility:favorite" 
+            variant={star.State}
+            class="iconsize"
+            onclick={handleRatingClick}
+            data-id={star.Index}
+            size={size}
+            src={star.CustomUrl}>
+        </lightning-icon>
+    </template>
+</template>

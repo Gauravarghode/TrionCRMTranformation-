@@ -1,0 +1,272 @@
+<template>
+
+    <!-- Lightning Flow Component -->
+
+    <div style="display:none;">
+        <lightning-flow if:true={renderProcessingFlow} 
+                        flow-api-name={processingFlowApiName}
+                        flow-input-variables={flowInputVariables} 
+                        onstatuschange={handleStatusChange}>
+        </lightning-flow>
+    </div>
+
+    <template if:true={isLoading}>
+        <!-- <div class="backgroundInverse">
+
+            <lightning-spinner variant="inverse" alternative-text="Loading..." size="large"
+            ></lightning-spinner>
+        </div> -->
+
+        <!-- <div class="custom-spinner" style="height: 6rem;"><div role="status" class="slds-spinner slds-spinner_large custom-spinner">
+            <span class="slds-assistive-text">Loading</span><div class="slds-spinner__dot-a slds-spinner__dot-a::before slds-spinner__dot-a::after"></div>
+            <div class="slds-spinner__dot-b slds-spinner__dot-b::before slds-spinner__dot-b::after">
+        </div></div></div> -->
+        <div class="circle-spinner">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            </div>
+            <span class="loadingtextfont"> Loading....</span>
+    </template>
+    
+    <!-- Initial Survey Start Screen -->
+    <template if:true={isSurveyStarted}>
+        <lightning-card class="centered-container">
+            <div class="slds-p-around_medium slds-text-align_center">
+                <h1 class="headertextfont" style="color: white;">Service Follow-Up</h1>
+                <span class="textfont">Please take a minute and let us know about your recent experience with Trion Services.</span>
+                <br />
+                <span class="textfont">This short survey can be completed in less than one minute.</span>
+                <div class="slds-p-around_medium slds-align_absolute-center ">
+                    <button class="button"
+                            onclick={surveyQuestions}>
+                            Start Here
+                    </button>
+                </div>
+            </div>
+        </lightning-card>
+    </template>
+
+    <!-- Error Message -->
+    <template if:true={error}>
+        <p>{error}</p>
+    </template>
+
+    <!-- No Questions Available -->
+    <template if:true={isQuestionsEmpty}>
+        <lightning-card class="centered-container">
+            <div class="slds-p-around_medium slds-text-align_center">
+                <h1 class="textfont" style="color: white;">No Questions Available</h1>
+            </div>
+        </lightning-card>
+    </template>
+
+    <!-- Survey Questions Display -->
+    <template if:true={isSurveyQuestions}>
+        <template if:true={questions.length}>
+            <!-- <lightning-card class="centered-containerquestions slds-card"> -->
+                <lightning-card class="centered-containerquestions slds-card">
+
+                <!-- Display Current Question -->
+                <template for:each={paginatedQuestions} for:item="question">
+                    <div key={question.id} class="slds-m-bottom_large slds-p-around_medium">
+
+                        <strong class="textfont">{question.Question__c}</strong>
+
+
+                        <!-- Text Input for Text Data Type -->
+                        <template if:true={question.isText}>
+                            <div class="slds-p-around_medium">
+                                <textarea type="text"
+                                          data-id={question.id}
+                                          name={question.Question__c}
+                                          id={question.id}
+                                          class="slds-size_1-of-1 slds-textarea slds-form-element slds-form-element__control textareafont"
+                                          onchange={handleResponseChange}>
+                                          {question.selectedValues}
+                                </textarea>
+                            </div>
+                        </template>
+
+                        <!-- Like/Dislike for Like/Dislike Data Type -->
+                        <template if:true={question.isLikeDislike}>
+                            <!-- <lightning-card> -->
+                                <div class="slds-m-around_medium slds-grid ">
+                                    <!-- Like Button -->
+                                    <lightning-icon icon-name="utility:like" 
+                                                    size="large" 
+                                                    data-name="like"
+                                                    data-id={question.id} 
+                                                    alternative-text="Like"
+                                                    class={question.likeIconClass} 
+                                                    onclick={handleLikeClick}>
+                                    </lightning-icon>
+
+                                    <!-- Dislike Button -->
+                                    <lightning-icon icon-name="utility:dislike" 
+                                                    data-id={question.id}
+                                                    data-name="dislike" 
+                                                    alternative-text="Dislike" 
+                                                    class={question.dislikeIconClass}
+                                                    size="large" 
+                                                    onclick={handleDislikeClick}>
+                                    </lightning-icon>
+
+                                </div>
+                            <!-- </lightning-card> -->
+                        </template>
+
+                        <!-- Date Picker for Date Data Type -->
+                        <template if:true={question.isDate}>
+                            <div class="slds-m-around_medium slds-grid">
+                                <input type="date"
+                                       data-id={question.id}
+                                       class="slds-size_1-of-5 textareafont"
+                                       onchange={handleResponseChange}
+                                       value={question.selectedValues}/>
+                            </div>
+                        </template>
+
+                        <!-- Star Rating for Rating Data Type -->
+                        <template if:true={question.isRating}>
+                            <div class="slds-m-left_small slds-m-around_medium slds-grid">
+
+                                <div class="slds-m-left_small slds-m-bottom_medium">
+                                    <c-star rating={question.selectedValue} 
+                                            type="number" 
+                                            onratingclick={handleStarRatingResponse}
+                                            data-id={question.id} 
+                                            name={question.id}
+                                            id={question.id}>
+                                    </c-star>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Radio Buttons for Picklist Data Type -->
+                        <template if:true={question.isPicklist}>
+                            <div class="radio-container">
+                                <template for:each={question.options} for:item="option">
+                                    <div class="slds-radio" key={option.value}>
+                                        <input type="radio"
+                                               class="custom-radio"
+                                               name={question.id}
+                                               id={option.value}
+                                               data-id={question.id}
+                                               data-datatype="radio"
+                                               value={option.value}
+                                               checked={option.checked}
+                                               onchange={handlePicklistChange}/>
+                                        <label class="slds-radio__label" for={option.value}>
+                            <span class="slds-radio_faux" style="width: 20px; height: 20px; border-color: white; "></span>
+                            <span class="slds-form-element__label radiofont" >{option.label}</span>
+                            </label>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+
+                        <!-- Checkbox Group for Multi Select Data Type -->
+                        <template if:true={question.isMultiSelect}>
+
+
+                            <!-- Iterate through each option and create a checkbox -->
+                            <div class="checkbox-container">
+                                <template for:each={question.options} for:item="option">
+                                    <div class="slds-checkbox" key={option.value}>
+                                        <input type="checkbox"
+                                               class="custom-checkbox"
+                                               name={question.id}
+                                               id={option.value}
+                                               data-id={question.id}
+                                               data-datatype="checkbox"
+                                               value={option.value}
+                                               checked={option.checked} 
+                                               data-index={index}
+                                               onchange={handleMultiSelectChange} />
+                                        <label class="slds-checkbox__label" for={option.value}>
+          <span class="slds-checkbox_faux" style="width: 20px; height: 20px; border-color: white; "></span>
+          <span class="slds-form-element__label checkboxfont">{option.label}</span>
+        </label>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                    </div>
+                </template>
+
+                <!-- Navigation Buttons -->
+                <div class="slds-p-around_medium slds-align_absolute-center">
+                    <button class="button"
+                            onclick={handlePrevious}
+                            if:false={isFirstQuestion}>
+                            Previous
+                    </button>
+
+                    <button class="button"
+                            onclick={handleNext}
+                            if:false={isLastQuestion}>
+                            Next
+                    </button>
+                </div>
+
+                <!-- Submit Button -->
+                <!-- <template if:true={isLastQuestion}> -->
+                <div class="slds-p-around_medium slds-align_absolute-center slds_align">
+                    <!-- Single Submit Button that invokes handleStartFlow method -->
+                    <button class="submitbutton"
+                            onclick={handleSubmit}
+                            if:true={isLastQuestion}>
+                            Submit
+                    </button>
+                </div>
+                <!-- </div> -->
+            </lightning-card>
+        </template>
+    </template>
+
+    <!-- Flow component, conditionally rendered -->
+    <div style="display:none;">
+        <lightning-flow if:true={renderResponseFlow} 
+                        flow-api-name={responseFlowApiName}
+                        flow-input-variables={flowOutputtVariables} 
+                        onstatuschange={handleOutputStatusChange}>
+        </lightning-flow>
+    </div>
+
+    <template if:true={isSubmitted}>
+        <lightning-card class="centered-container">
+            <div class="slds-p-around_medium slds-text-align_center">
+                <div>
+                    <h1 class="textfont" style="color: white;">Thank you for your Feedback.</h1> <br>
+
+                    <div class="slds-p-around_medium slds-align_absolute-center feedback">
+                        <img src="https://image.triontoday.com/lib/fe2f11747364047d7c1173/m/1/da993568-86cb-4d52-8e6e-b9f29693a3df.png"/>
+                    </div>
+
+                </div>
+            </div>
+        </lightning-card>
+    </template>
+
+    <template if:true={isSurveyed}>
+        <lightning-card class="centered-container">
+            <div class="slds-p-around_medium slds-text-align_center">
+                <div>
+                    <h1 class="textfont" style="color: white;">Your Survey has been already submitted</h1> <br>
+
+                    <div class="slds-p-around_medium slds-align_absolute-center feedback">
+                        <img src="https://image.triontoday.com/lib/fe2f11747364047d7c1173/m/1/da993568-86cb-4d52-8e6e-b9f29693a3df.png"/>
+                    </div>
+
+                </div>
+            </div>
+        </lightning-card>
+    </template>
+
+</template>

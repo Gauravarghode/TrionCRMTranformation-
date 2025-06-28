@@ -1,0 +1,55 @@
+<template>
+<div class="slds-card slds-card_boundary">
+      <div class="slds-card__header slds-grid slds-page-header">
+        <header class="slds-media slds-media_center slds-has-flexi-truncate slds-border_bottom">
+          <div class="slds-media__figure slds-m-vertical_small">
+            <lightning-icon slot="media" icon-name="standard:file" size="small"></lightning-icon>
+
+          </div>
+          <div class="slds-media__body">
+            <h2 class="slds-card__header-title">
+                <span>{cardLabel}</span>
+            </h2>
+          </div>
+         
+        </header>
+         <!-- <div>
+<lightning-button-menu>
+                <lightning-menu-item value="Add Files" label="Add Files"></lightning-menu-item>
+            </lightning-button-menu>        </div> -->
+      </div>
+      <div class="slds-card__body slds-card__body_inner">
+          
+       <template if:true={showFiles}>
+          <div class="slds-p-around_small">
+              <ul class="slds-has-dividers_bottom-space">
+                  <template for:each={filesToDisplay} for:item="file">
+                      <li key={file.fileId} class="slds-item">
+                        <lightning-tile label={file.name} onclick={openPreview} data-id={file.fileId} type="media">
+
+                              <lightning-avatar slot="media" fallback-icon-name={file.fileIcon} alternative-text=""></lightning-avatar>
+                              
+                              <ul class="slds-list_horizontal slds-has-dividers_right">
+                                  <li class="slds-item">{file.createdDateTime}</li>
+                                  <li class="slds-item">{file.size}</li>
+                                  <li class="slds-item">{file.fileExtension}</li>
+                              </ul>
+                          </lightning-tile>
+                      </li>
+                  </template>
+              </ul>
+          </div>
+      </template>
+      <template if:false={showFiles}>
+        <p>No Files to display.</p>
+      </template>
+
+    </div>   
+    <footer class="slds-card__footer">
+      <a class="slds-card__footer-action" onclick={showAllFiles}>View All
+        <span class="slds-assistive-text">Attachments</span>
+      </a>
+    </footer>      
+  </div>
+  <c-file-preview></c-file-preview>
+</template>

@@ -1,0 +1,3 @@
+<design:component>
+	<design:attribute name="buttonvisibilitysoqlFilter" label="Button Visibility SOQL Filter" default=""/>
+</design:component>

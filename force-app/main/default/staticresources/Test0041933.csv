@@ -1,0 +1,2 @@
+ContactId,AccountId,BusinessHoursId,OwnerId,CreatedById,LastModifiedById,ClosedDate,CreatedDate,Reason,Status,Issue_with__c,Subject,have_more_character__c
+0038Y00003Kk1c4QAB,0011M00002QjI43QAF,01mG000000081eoIAA,0058Y00000BawP6QAJ,0051M000007l0fnQAA,0058Y00000D18z2QAB,2023-12-12T19:54:09.000+0000,2023-12-12T17:15:23.000+0000,Issue Resolved,Closed,Employee,Fitness note,FALSE

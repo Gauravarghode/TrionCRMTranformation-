@@ -1,0 +1,227 @@
+/* Button Styles */
+.button-container {
+    position: relative;
+    display: inline-block;
+    margin: 1rem 0 2rem;
+}
+
+.main-button {
+    padding: 0.75rem 1.5rem 1.5rem 1.5rem;
+    background: white;
+    border: 1px solid #d8dde6;
+    border-radius: 0.25rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    min-width: 200px;
+}
+
+.main-button:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+}
+
+.button-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #2f2f2f;
+}
+
+.plus-icon-container {
+    position: absolute;
+    left: 50%;
+    bottom: -1rem;
+    transform: translateX(-50%);
+    width: 2rem;
+    height: 2rem;
+    background: #0176d3;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+    z-index: 2;
+}
+
+.plus-icon-container:hover {
+    background: #014486;
+    transform: translateX(-50%) scale(1.1);
+}
+
+.plus-icon {
+    --slds-c-icon-color-foreground: white;
+    --slds-c-icon-color-foreground-default: white;
+}
+
+/* Question Box Styles */
+.question-box {
+    transition: all 0.2s ease;
+    border: 1px solid #d8dde6;
+}
+
+.question-box:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    border-color: #b4bdc8;
+}
+
+.delete-button {
+    /* opacity: 0.7;
+    transition: opacity 0.2s ease; */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+    width: 32px;
+    border-radius: 4px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 8px;
+}
+
+.delete-button:hover:not(:disabled) {
+    background: #f3f3f3;
+}
+
+.delete-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.delete-icon {
+    --slds-c-icon-color-foreground: #747474;
+    --slds-c-icon-color-foreground-default: #747474;
+}
+
+.add-choice-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.5rem;
+    background: transparent;
+    border: 1px dashed #c9c9c9;
+    border-radius: 4px;
+    color: #0176d3;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.add-choice-button:hover {
+    background: #f8f9fa;
+    border-color: #0176d3;
+}
+
+.add-icon {
+    --slds-c-icon-color-foreground: #0176d3;
+    --slds-c-icon-color-foreground-default: #0176d3;
+}
+
+/* .delete-button:hover {
+    opacity: 1;
+} */
+
+/* Input Styles */
+.question-input {
+    background: white;
+    /* border-radius: 0.25rem; */
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    font-size:14px;
+
+}
+
+.question-input:focus {
+    border-color: #0176d3;
+    /* box-shadow: 0 0 3px #0176d3; */
+}
+
+/*.question-input:focus-within {
+     box-shadow: 0 0 0 1px #0176d3; 
+}*/
+
+.options-container {
+    margin-top: 1rem;
+}
+
+.option-row {
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.option-input {
+    width: 100%;
+}
+
+
+/* Type Button Styles */
+.type-button {
+    transition: all 0.2s ease;
+    border: 1px solid #d8dde6;
+    border-radius: 0.25rem;
+}
+
+.type-button:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* Container Styles */
+.cont2 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Modal Content */
+.modal-content {
+    padding: 0.5rem;
+}
+
+.rating-container {
+    text-align: center;
+    padding: 1rem;
+    opacity: 0.75;
+    pointer-events: none;
+}
+
+.star-rating {
+    font-size: 2rem;
+}
+
+.star {
+    color: #ddd;
+}
+.add-question {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 2rem; /* Space below the "Add Question" */
+}
+
+.centered-buttons {
+    display: flex;
+    justify-content: center; /* Center the button groups horizontally */
+    gap: 2rem;              /* Space between left and right groups */
+    margin-bottom: 2rem;    /* Space below the button groups */
+}
+
+.left-group,
+.right-group {
+    display: flex;
+    flex-direction: column; /* Stack buttons vertically */
+    gap: 1rem;              /* Space between buttons */
+}
+
+.footer-buttons {
+    display: flex;
+    justify-content: space-between; /* Keep Cancel and Finish at their respective sides */
+    margin-top: 2rem;              /* Space above the footer buttons */
+}

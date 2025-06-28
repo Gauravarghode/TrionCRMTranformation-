@@ -1,0 +1,34 @@
+<template>
+    <!-- <template if:true={isDeleteEnabled}> -->
+
+    <article class="slds-card">
+        <div class="">
+            <template for:each={emails} for:item="email">
+                <article key={email.IdOfCsv} class="slds-card slds-card_boundary slds-m-around_x-small">
+                    <div class="slds-m-around_small">
+                        <div>
+                            <div class="slds-list_horizontal">
+                                <lightning-icon icon-name="action:user" alternative-text={email.CreatedByUserName} size="xx-small"
+                                    ></lightning-icon>
+                                <!--More icon please visit : https://www.lightningdesignsystem.com/icons/ -->
+                                <a onclick={navigateToUser} data-userid={email.CreatedById}
+                                    class="slds-m-left_x-small slds-m-top_x-small" > {email.CreatedByUserName} </a>
+                            </div>
+                            &nbsp; <p>created at {email.CreatedDate}</p>
+                            &nbsp; 
+                            <div class="slds-list_horizontal">
+                                <lightning-icon icon-name="utility:email" alternative-text="Email" size="small" ></lightning-icon>
+                                <p class="slds-m-left_x-small">To: {email.ToAddress}, Bcc: {email.BccAddress}</p>
+                                 <!-- <p class="slds-m-left_x-small">To: {email.ToAddress}</p> -->
+                            </div>
+                        </div> <br/>
+                        <lightning-formatted-rich-text value={email.HtmlBody}></lightning-formatted-rich-text> 
+                    </div>
+                </article>
+            </template>
+        </div>
+    </article>
+
+    <!-- </template> -->
+
+</template>

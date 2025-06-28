@@ -1,0 +1,177 @@
+<template>
+    <div class="slds-tabs_default slds-tabs_card slds-tabs_medium">
+        <template if:false={isParamsLoaded}>
+                <div>
+                    <lightning-spinner alternative-text="Loading Data from SharePoint"></lightning-spinner>
+                </div><br/>
+                <div>
+                    There was an unexpected error while loading the details, please try again.
+                </div>
+        </template>
+        <template if:true={isParamsLoaded}>
+        <lightning-tabset class="slds-p-around slds-p-bottom_medium">
+        <lightning-tab label="Message" class="slds-m-top_large">
+            <!-- Message Tab Content --> 
+            <!-- <template if:true={isEmailLoaded}> -->
+                <div class="slds-p-around_medium">
+                    <p>From: {emailMessage.FromAddress}</p>
+                    <p>To: {emailMessage.ToAddress} Bcc:{emailMessage.BccAddress}</p>
+                    <br><br>
+                     <lightning-formatted-rich-text value={emailMessage.HtmlBody}></lightning-formatted-rich-text> 
+                </div>
+            <!-- </template> -->
+            
+        </lightning-tab>
+        <lightning-tab label="Details">
+            <!-- Details Tab Content -->
+            <!-- <template if:false={isEmailLoaded}>
+                <div>
+                    <div>
+                        <lightning-spinner alternative-text="Loading Data from SharePoint"></lightning-spinner>
+                    </div><br/>
+                    There was an unexpected error while loading the details, please try again.
+                </div>
+            </template> -->
+            <!-- <template if:true={isEmailLoaded}> -->
+                <div class="slds-p-around_medium ">
+                    <lightning-accordion allow-multiple-sections-open >
+                        <!-- Information Section -->
+                        <lightning-accordion-section label="Information" name="information" class="accLabel">
+                            <div class="slds-grid slds-wrap slds-gutters ">
+                                <div class="slds-col slds-size_1-of-2">
+                                    <div class="slds-form slds-form_compound">
+                                        <div class="slds-form-element">
+                                            <label class="slds-form-element__label" for="headers">Headers</label>
+                                            <div class="slds-form-element__control">
+ <template if:true={caseNumber}>
+                <lightning-formatted-url value={caseUrl} label={caseNumber}></lightning-formatted-url>
+            </template>
+            <template if:false={caseNumber}>
+                <span>No Parent Case</span>
+            </template>                                 </div>
+                                        </div>
+                                        <div class="slds-form-element">
+                                            <label class="slds-form-element__label" for="parentCase">Parent Case</label>
+                                            <div class="slds-form-element__control">
+                                                <!-- <span class="slds-form-element__static slds-border_bottom" id="parentCase">emailMessage.ParentCase</span> -->
+                                                <span class="slds-form-element__static slds-border_bottom" id="parentCase">
+                                                    <a onclick={openCaseRecord}>{caseRecord.CaseNumber}</a>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="slds-form-element">
+                                            <label class="slds-form-element__label" for="messageDate">Message Date</label>
+                                            <div class="slds-form-element__control">
+                                                <span class="slds-form-element__static slds-border_bottom" id="messageDate">{emailMessage.MessageDate}</span>
+                                            </div>
+                                        </div>
+                                        <div class="slds-form-element">
+                                            <label class="slds-form-element__label" for="CreatedDate">Created By</label>
+                                            <div class="slds-form-element__control">
+                                                <span class="slds-form-element__static slds-border_bottom" id="CreatedDate">
+                                                    <!-- {emailMessage.CreatedById}  -->
+                                                    <a onclick={openUserRecord} data-id = {emailMessage.CreatedById}>{emailMessage.CreatedByUserName}</a>, {emailMessage.CreatedDate}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <!-- <div class="slds-form-element">
+                                            <label class="slds-form-element__label" for="fileTestCreatedDate">FileTest Created Date</label>
+                                            <div class="slds-form-element__control">
+                                                <span class="slds-form-element__static slds-border_bottom" id="fileTestCreatedDate">emailMessage.FileTestCreatedDate</span>
+                                            </div>
+                                        </div> -->
+                                    </div>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                    <div class="slds-form slds-form_compound">
+                                        <div class="slds-form-element">
+                                            <label class="slds-form-element__label" for="status">Status</label>
+                                            <div class="slds-form-element__control">
+                                                <span class="slds-form-element__static slds-border_bottom" id="status">{emailMessage.Status}</span>
+                                            </div>
+                                        </div>
+                                        <div class="slds-form-element">
+                                            <label class="slds-form-element__label" for="lastModifiedBy">Last Modified By</label>
+                                            <div class="slds-form-element__control">
+                                                <span class="slds-form-element__static slds-border_bottom" id="lastModifiedBy"> 
+                                                    <a data-id = {emailMessage.LastModifiedById} onclick={openUserRecord}>{emailMessage.LastModifiedByUserName} </a> , {emailMessage.LastModifiedDate}
+                                                    </span>
+                                            </div>
+                                        </div>
+                                        <!-- Add more fields as needed -->
+                                    </div>
+                                </div>
+                            </div>
+                        </lightning-accordion-section>
+
+                        <!-- Address Information Section -->
+                        <lightning-accordion-section label="Address Information" name="addressInfo" class="accLabel">
+                            <div class="slds-form slds-form_compound">
+                                <div class="slds-form-element">
+                                    <span class="slds-form-element__label">From Address:</span>
+                                    <div class="slds-form-element__control">
+                                        <span class="slds-form-element__static slds-border_bottom">{emailMessage.FromAddress}</span>
+                                    </div>
+                                </div>
+                                <div class="slds-form-element">
+                                    <span class="slds-form-element__label">From Name</span>
+                                    <div class="slds-form-element__control">
+                                        <span class="slds-form-element__static slds-border_bottom">{emailMessage.FromName}</span>
+                                    </div>
+                                </div>
+                                <div class="slds-form-element">
+                                    <span class="slds-form-element__label">To Address</span>
+                                    <div class="slds-form-element__control">
+                                        <span class="slds-form-element__static slds-border_bottom">{emailMessage.ToAddress}</span>
+                                    </div>
+                                </div>
+                                <div class="slds-form-element">
+                                    <span class="slds-form-element__label">CC Address</span>
+                                    <div class="slds-form-element__control">
+                                        <span class="slds-form-element__static slds-border_bottom">{emailMessage.CcAddress}</span>
+                                    </div>
+                                </div>
+                                <div class="slds-form-element">
+                                    <span class="slds-form-element__label">BCC Address</span>
+                                    <div class="slds-form-element__control">
+                                        <span class="slds-form-element__static slds-border_bottom">{emailMessage.BccAddress}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </lightning-accordion-section>
+
+                        <!-- Message Content Section -->
+                        <lightning-accordion-section label="Message Content" name="messageContent" class="accLabel">
+                            <div class="slds-form slds-form_compound">
+                                <div class="slds-form-element">
+                                    <span class="slds-form-element__label">Subject:</span>
+                                    <div class="slds-form-element__control">
+                                    <span class="slds-form-element__static slds-border_bottom">{emailMessage.Subject}</span> 
+                                    </div>
+                                </div>
+                                <div class="slds-form-element">
+                                    <span class="slds-form-element__label">HTML Body</span>
+                                    <div class="slds-form-element__control">
+                                    <lightning-formatted-rich-text value={emailMessage.HtmlBody} class="slds-form-element__static slds-border_bottom"></lightning-formatted-rich-text> 
+                                    </div>
+                                </div>
+                                <div class="slds-form-element">
+                                    <span class="slds-form-element__label">Text Body</span>
+                                    <div class="slds-form-element__control">
+                                    <lightning-formatted-rich-text value={emailMessage.HtmlBody}></lightning-formatted-rich-text> 
+                                    </div>
+                                </div>
+                            
+                            </div>
+                        </lightning-accordion-section>
+                    </lightning-accordion>
+                </div>
+            <!-- </template> -->
+            
+        </lightning-tab>
+
+        </lightning-tabset>
+        </template>
+</div>
+
+</template>

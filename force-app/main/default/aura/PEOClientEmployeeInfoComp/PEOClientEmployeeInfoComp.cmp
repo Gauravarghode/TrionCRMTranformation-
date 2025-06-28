@@ -1,0 +1,858 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" 
+                access="global"
+                controller="PEOClientEmployeeInfoCompCtrl">
+    <!--attribute-->
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="selectedStateId" type="String"/>
+    <aura:attribute name="opp" type="Opportunity" default="{'sobjectType ':'Opportunity'}"/>
+    <aura:attribute name="oProposal" type="Proposal__c" default="{'sobjectType ':'Proposal__c'}"/>
+    <aura:attribute name="oClientLocation" type="Client_Location__c" default="{'sobjectType ':'Client_Location__c'}"/>
+    <aura:attribute name="oWCRate" type="WC_Rate__c" default="{'sobjectType ':'WC_Rate__c'}"/>
+    
+    <aura:attribute name="lstSUTAQuoteWrapper" type="List"/>
+    <aura:attribute name="lstSUTAQuoteToInsert" type="List"/>
+    <aura:attribute name="isShowAddStateModal" type="boolean" default="false"/>
+    <aura:attribute name="isShowAddLocationModal" type="boolean" default="false"/>
+    <aura:attribute name="isShowAddWCRateModal" type="boolean" default="false"/>
+    <aura:attribute name="isDelete" type="boolean" default="false"/>
+    <aura:attribute name="isTerritorialRating" type="boolean" default="false"/>
+    <aura:attribute name="locationIndex" type="Integer"/>
+    <aura:attribute name="wcRateIndex" type="String"/>
+    <aura:attribute name="wcRateNoLocationIndex" type="String"/>
+    <aura:attribute name="wcRateWhereClause" type="String" default=""/>
+    
+    <aura:attribute name="isShowAddCompModal" type="boolean" default="false"/>
+    <aura:attribute name="isShowAddState" type="boolean" default="false"/>
+    <aura:attribute name="isShowAddComp" type="boolean" default="false"/>
+    <aura:attribute name="mapStates" type="Map"/>
+    <aura:attribute name="selectedState" type="String"/>
+    <aura:attribute name="selectedStateName" type="String"/>
+    <aura:attribute name="mapClientLocationPicklistValues" type="Map"/>
+    
+    <aura:attribute name="isNewClientLocation" type="Boolean" default="false"/>
+    <aura:attribute name="isShowAddModal" type="Boolean" default="false"/>
+    <aura:attribute name="isParentModal" type="Boolean" default="false"/>
+    <aura:attribute name="wcCompWhereClause" type="String" default=""/>
+    
+    <aura:attribute name="isShowEditLocationModal" type="Boolean" default="false"/>
+    <aura:attribute name="selectedClientLocationId" type="String" />
+    
+    <aura:attribute name="buttonvisibilitysoqlFilter" type="String"/>
+    <aura:attribute name="isButtonVisible" type="Boolean" default="true"/>
+    
+    <!--handler-->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <!--CUSTOM_CSS_DO_NOT_MODIFY-->
+    <aura:html tag="style">
+        .nohover:hover{
+        background-color:#ffffff !Important;
+        }
+        .nohover:focus{
+        background-color:#ffffff !Important;
+        }
+        .custom-scroll{
+        max-height: 300px;
+        overflow-x: overlay;
+        }
+        .slds-lookup__menu{
+        position: fixed;
+        }
+        .cthead{
+        padding-top:10px !Important;
+        padding-bottom:10px !Important;
+        }
+        table{
+        	border: 1px solid lightgrey !Important;
+        }
+    </aura:html>
+    
+    <!--markup-->
+    <div>
+        <!--spinner-->
+        <lightning:spinner aura:id="spinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+        
+        <div class="slds-grid slds-wrap">
+            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                <div class="custom-scroll">
+                    <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                        <thead>
+                            <tr class="slds-line-height_reset">
+                                <th class="cthead" scope="col">
+                                    
+                                </th>
+                                <th class="cthead" scope="col">
+                                    <div class="slds-truncate" title="State">State</div>
+                                </th>
+                                <th class="cthead" scope="col">
+                                    <div class="slds-truncate" title="# of Employees"># of Employees</div>
+                                </th>
+                                <th class="cthead" scope="col">
+                                    <div class="slds-truncate" title="Gross Wages">Gross Wages</div>
+                                </th>
+                                <th class="cthead" scope="col" style="width:5%;">
+                                    <div class="slds-truncate" title="Actions">Actions</div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <aura:iteration items="{!v.lstSUTAQuoteWrapper}" var="oWrapper" indexVar="index">
+                                <tr class="slds-hint-parent">
+                                    <th scope="row" style="width:5%">
+                                        <aura:if isTrue="{!oWrapper.isDelete}">
+                                            <lightning:input type="checkbox" name="input1" checked="{!oWrapper.isSelected}" variant="label-hidden"/>
+                                            <aura:set attribute="else">
+                                                <lightning:buttonIcon value="{!index}" onclick="{!c.toggleStateRecord}" iconName="{!oWrapper.isExpaned?'utility:chevrondown':'utility:chevronright'}" />    
+                                            </aura:set>
+                                        </aura:if>
+                                    </th>
+                                    <td data-label="{!oWrapper.oQuote.State_Name__c}">
+                                        <div class="slds-truncate" title="{!oWrapper.oQuote.State_Name__c}">{!oWrapper.oQuote.State_Name__c}</div>
+                                    </td>
+                                    <td>
+                                        <div class="slds-truncate">{!oWrapper.oQuote.Total_of_Employees__c}</div>
+                                    </td>
+                                    <td>
+                                        <div class="slds-truncate">
+                                            <lightning:formattedNumber value="{!oWrapper.oQuote.Total_Gross_Wages__c}" style="currency" currencyCode="USD"/>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <aura:if isTrue="{!v.isButtonVisible}">
+                                        	<lightning:buttonIcon iconName="utility:delete" name="{!oWrapper.oQuote.Id}" onclick="{!c.handleDeleteSutaQutoteRecord}" alternativeText="Delete" title="Delete" />
+                                        </aura:if>
+                                    </td>
+                                </tr>
+                                <aura:if isTrue="{!oWrapper.isExpaned}">
+                                    <tr class="nohover">
+                                        <td colspan="5" class="nohover">
+                                            <div class="custom-scroll">
+                                                <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                                                    <thead>
+                                                        <tr class="slds-line-height_reset">
+                                                            <th class="cthead" scope="col">
+                                                                <div class="slds-truncate" title="Loc #">Loc #</div>
+                                                            </th>
+                                                            <th class="cthead" scope="col">
+                                                                <div class="slds-truncate" title="State Name">State Name</div>
+                                                            </th>
+                                                            <th class="cthead" scope="col">
+                                                                <div class="slds-truncate" title="Class Code/Description">Class Code/Description</div>
+                                                            </th>
+                                                            <th class="cthead" scope="col">
+                                                                <div class="slds-truncate" title="# Part Time Employees"># Part Time Employees</div>
+                                                            </th>
+                                                            <th class="cthead" scope="col">
+                                                                <div class="slds-truncate" title="# Full Time Employees"># Full Time Employees</div>
+                                                            </th>
+                                                            <th class="cthead" scope="col">
+                                                                <div class="slds-truncate" title="Gross Wages">Gross Wages</div>
+                                                            </th>
+                                                            <th class="cthead" scope="col">
+                                                                <div class="slds-truncate" title="Rate">Rate</div>
+                                                            </th>
+                                                            <th class="cthead" scope="col">
+                                                                <div class="slds-truncate" title="Estimated Annual Manual Premium">Estimated Annual Manual Premium</div>
+                                                            </th>
+                                                            <th class="cthead" scope="col" style="width:10%;">
+                                                                <div class="slds-truncate" title="Actions">Actions</div>
+                                                            </th>  
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <aura:if isTrue="{!oWrapper.lstRateWrapper != null &amp;&amp; oWrapper.lstRateWrapper != undefined &amp;&amp; oWrapper.lstRateWrapper.length > 0}">
+                                                            
+                                                            <aura:iteration items="{!oWrapper.lstRateWrapper}" var="oRateWrapper" indexVar="clientindex">
+                                                                <tr class="slds-hint-parent">
+                                                                    <th scope="row">
+                                                                        <div class="slds-truncate">
+                                                                            <lightning:formattedNumber value="{!oRateWrapper.oRate.Client_Location__r.Loc__c}"/>
+                                                                        </div>
+                                                                    </th>
+                                                                    <td>
+                                                                        <div class="slds-truncate">
+                                                                            {!oRateWrapper.oRate.SUTA_Quote__r.State__r.Name}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate">
+																			{!oRateWrapper.oRate.Description__c}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate">
+                                                                            <lightning:formattedNumber value="{!oRateWrapper.oRate.Part_Time_Employees__c}"/>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate">
+                                                                            <lightning:formattedNumber value="{!oRateWrapper.oRate.of_Employees__c}"/>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate">
+																			<lightning:formattedNumber value="{!oRateWrapper.oRate.Gross_Wages__c}" style="currency" currencyCode="USD"/>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate">
+																			<lightning:formattedNumber value="{!oRateWrapper.oRate.Current_Rate__c}" style="percent-fixed"/>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate">
+																			<lightning:formattedNumber value="{!oRateWrapper.oRate.Estimated_Annual_Manual_Premium__c}" style="currency" currencyCode="USD"/>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <aura:if isTrue="{!v.isButtonVisible}">
+                                                                            <lightning:buttonIcon iconName="utility:edit" name="{!oRateWrapper.oRate.Id}"  value="{!index}"  alternativeText="Edit" title="Edit" onclick="{!c.handleEditNoLocationWCRate}"/>
+                                                                            <lightning:buttonIcon iconName="utility:delete" name="{!oRateWrapper.oRate.Id}"  value="{!index}"  alternativeText="Delete" title="Delete" onclick="{!c.handleDeleteNoLocationWCRate}"/>
+                                                                        </aura:if>
+                                                                    </td>
+                                                                </tr>
+                                                            </aura:iteration>
+                                                            
+                                                            <aura:set attribute="else">
+                                                                <tr>
+                                                                    <td colspan="6">No Records Found!</td>
+                                                                </tr>
+                                                            </aura:set>
+                                                        </aura:if>
+                                                    </tbody>
+                                                </table>
+                                                
+                                                <!--client_location_exist-->
+                                                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-p-top_small">
+                                                    <thead>
+                                                        <tr class="slds-line-height_reset">
+                                                            <th class="cthead" scope="col">
+                                                                
+                                                            </th>
+                                                            <th class="cthead" scope="col">
+                                                                <div class="slds-truncate" title="Loc #">Loc #</div>
+                                                            </th>
+                                                            <th class="cthead" scope="col">
+                                                                <div class="slds-truncate" title="Street">Street</div>
+                                                            </th>
+                                                            <th class="cthead" scope="col">
+                                                                <div class="slds-truncate" title="City">City</div>
+                                                            </th>
+                                                            <th class="cthead" scope="col">
+                                                                <div class="slds-truncate" title="Zip Code">Zip Code</div>
+                                                            </th>
+                                                            <th class="cthead" scope="col" style="width:10%;">
+                                                                <div class="slds-truncate" title="Actions">Actions</div>
+                                                            </th>  
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <aura:if isTrue="{!oWrapper.lstClientLocationWrapper != null &amp;&amp; oWrapper.lstClientLocationWrapper != undefined &amp;&amp; oWrapper.lstClientLocationWrapper.length > 0}">
+                                                            
+                                                            <aura:iteration items="{!oWrapper.lstClientLocationWrapper}" var="oClientWrapper" indexVar="clientindex">
+                                                                <tr class="slds-hint-parent">
+                                                                    <th scope="row">
+                                                                        <lightning:buttonIcon value="{!index+'_'+clientindex}" onclick="{!c.toggleClientRecord}" iconName="{!oClientWrapper.isExpaned?'utility:chevrondown':'utility:chevronright'}" />
+                                                                    </th>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!oClientWrapper.oClientLocation.Loc__c}">
+                                                                            {!oClientWrapper.oClientLocation.Loc__c}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!oClientWrapper.oClientLocation.Street__c}">
+                                                                            {!oClientWrapper.oClientLocation.Street__c}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!oClientWrapper.oClientLocation.City__c}">
+                                                                            {!oClientWrapper.oClientLocation.City__c}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="slds-truncate" title="{!oClientWrapper.oClientLocation.Zip_Code__c}">
+                                                                            {!oClientWrapper.oClientLocation.Zip_Code__c}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <aura:if isTrue="{!v.isButtonVisible}">
+                                                                            <lightning:buttonIcon iconName="utility:edit" name="{!oClientWrapper.oClientLocation.Id}"  value="{!index}"  alternativeText="Edit" title="Edit" onclick="{!c.handleEditClientLocation}"/>
+                                                                            <lightning:buttonIcon iconName="utility:delete" name="{!oClientWrapper.oClientLocation.Id}"  value="{!index}"  alternativeText="Delete" title="Delete" onclick="{!c.handleDeleteClientLocation}"/>
+                                                                        </aura:if>
+                                                                    </td>
+                                                                </tr>
+                                                                <aura:if isTrue="{!oClientWrapper.isExpaned}">
+                                                                    <tr class="nohover">
+                                                                        <td colspan="7" class="nohover">
+                                                                            <div class="custom-scroll">
+                                                                                <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                                                                                    <thead>
+                                                                                        <tr class="slds-line-height_reset">
+                                                                                            <th class="cthead" scope="col"></th>
+                                                                                            <th class="cthead" scope="col">
+                                                                                                <div class="slds-truncate">WC Code</div>
+                                                                                            </th>
+                                                                                            <th class="cthead" scope="col">
+                                                                                                <div class="slds-truncate">Description</div>
+                                                                                            </th>
+                                                                                            <th class="cthead" scope="col">
+                                                                                                <div class="slds-truncate"># Part Time Employees</div>
+                                                                                            </th>
+                                                                                            <th class="cthead" scope="col">
+                                                                                                <div class="slds-truncate"># Full Time Employees</div>
+                                                                                            </th>
+                                                                                            <th class="cthead" scope="col">
+                                                                                                <div class="slds-truncate">Gross Wages</div>
+                                                                                            </th>
+                                                                                            <th class="cthead" scope="col">
+                                                                                                <div class="slds-truncate">Rating</div>
+                                                                                            </th>
+                                                                                            <th class="cthead" scope="col">
+                                                                                                <div class="slds-truncate">Est. Annu. Manual Premium</div>
+                                                                                            </th>
+                                                                                            <th class="cthead" scope="col" style="width:10%;">
+                                                                                                <div class="slds-truncate" title="Actions">Actions</div>
+                                                                                            </th>  
+                                                                                        </tr>
+                                                                                    </thead>
+                                                                                    <tbody>
+                                                                                        <aura:if isTrue="{!oClientWrapper.lstWCRates != null &amp;&amp; oClientWrapper.lstWCRates != undefined &amp;&amp; oClientWrapper.lstWCRates.length > 0}">
+                                                                                            <aura:iteration items="{!oClientWrapper.lstWCRates}" var="oWCRates" indexVar="rateindex">
+                                                                                                <tr class="slds-hint-parent">
+                                                                                                    <th scope="row">
+                                                                                                        <aura:if isTrue="{!oWCRates.isDelete}">
+                                                                                                            <lightning:input type="checkbox" name="input1" checked="{!oWCRates.isSelected}" variant="label-hidden"/>
+                                                                                                        </aura:if>
+                                                                                                    </th>
+                                                                                                    <th scope="row">
+                                                                                                        <div class="slds-truncate">
+                                                                                                            {!oWCRates.oRate.State_Comp_Code__r.WC_Code__r.Code__c}
+                                                                                                        </div>
+                                                                                                    </th> 
+                                                                                                    <td>
+                                                                                                        <div class="slds-truncate">
+                                                                                                            {!oWCRates.oRate.Description__c}
+                                                                                                        </div>
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        <div class="slds-truncate">
+                                                                                                            {!oWCRates.oRate.Part_Time_Employees__c}
+                                                                                                        </div>
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        <div class="slds-truncate">
+                                                                                                            {!oWCRates.oRate.of_Employees__c}
+                                                                                                        </div>
+                                                                                                    </td>  
+                                                                                                    <td>
+                                                                                                        <div class="slds-truncate">
+                                                                                                            <lightning:formattedNumber value="{!oWCRates.oRate.Gross_Wages__c}" style="currency" currencyCode="USD"/>
+                                                                                                        </div>
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        <div class="slds-truncate" >
+                                                                                                            {!oWCRates.oRate.Current_Rate__c}
+                                                                                                        </div>
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        <div class="slds-truncate">
+                                                                                                            <lightning:formattedNumber value="{!oWCRates.oRate.Estimated_Annual_Manual_Premium__c}" style="currency" currencyCode="USD"/>
+                                                                                                        </div>
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        <aura:if isTrue="{!v.isButtonVisible}">
+                                                                                                            <lightning:buttonIcon iconName="utility:edit" name="{!oWCRates.oRate.Id}"  value="{!index+'_'+clientindex}"  alternativeText="Edit" title="Edit" onclick="{!c.handleEditWCRate}"/>
+                                                                                                            <lightning:buttonIcon iconName="utility:delete" name="{!oWCRates.oRate.Id}"  value="{!index+'_'+clientindex}"  alternativeText="Delete" title="Delete" onclick="{!c.handleDeleteWCRate}"/>
+                                                                                                        </aura:if>
+                                                                                                    </td>
+                                                                                                </tr>
+                                                                                            </aura:iteration>
+                                                                                            <aura:set attribute="else">
+                                                                                                <tr>
+                                                                                                    <td colspan="9">No Records Found!</td>
+                                                                                                </tr>
+                                                                                            </aura:set>
+                                                                                        </aura:if>
+                                                                                        
+                                                                                    </tbody>
+                                                                                </table>
+                                                                            </div>
+                                                                            <div class="slds-p-top_small slds-p-bottom_small">
+                                                                                <aura:if isTrue="{!v.isButtonVisible}">
+                                                                                    <button class="slds-button slds-button_neutral" type="button" data-index="{!index+'_'+clientindex}" onclick="{!c.handleShowAddWCRateModal}">Add</button>
+                                                                                </aura:if>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                </aura:if>
+                                                            </aura:iteration>
+                                                            
+                                                            <aura:set attribute="else">
+                                                                <tr>
+                                                                    <td colspan="6">No Records Found!</td>
+                                                                </tr>
+                                                            </aura:set>
+                                                        </aura:if>
+                                                        
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="slds-p-top_small slds-p-bottom_small">
+                                                <aura:if isTrue="{!v.isButtonVisible}">
+                                                    <button class="slds-button slds-button_neutral" name="{!index}" data-index="{!index}" type="button" onclick="{!c.handleShowAddLocation}">Add Location</button>
+                                                </aura:if>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </aura:if>
+                            </aura:iteration>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="slds-size_1-of-1 slds-p-top_small slds-p-bottom_small">
+                <aura:if isTrue="{!v.isButtonVisible}">
+                    <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleShowAddStateModal}">Add State</button>
+                    <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleShowAddCompModal}">Add Comp</button>
+                </aura:if>
+            </div>
+        </div>
+        
+        <!--Add State Modal-->
+        <aura:if isTrue="{!v.isShowAddStateModal}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                <div class="slds-modal__container">
+                    <!--spinner-->
+                    <lightning:spinner aura:id="modalspinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.handleCloseAddStateModal}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Add State</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <table aria-multiselectable="true" class="slds-table slds-table_bordered slds-table_fixed-layout slds-table_resizable-cols" role="grid">
+                            <thead>
+                                <tr class="slds-line-height_reset">
+                                    <th aria-label="State" aria-sort="none" class="slds-has-button-menu slds-is-resizable slds-is-sortable" scope="col">
+                                        <a class="slds-th__action slds-text-link_reset" href="javascript:void(0);" role="button" tabindex="-1">
+                                            <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                                                <span class="slds-truncate" title="State">State</span>
+                                            </div>
+                                        </a>
+                                        
+                                    </th>
+                                    <th class="" scope="col" style="width:3.25rem">
+                                        <div class="slds-truncate" title="Actions">Actions</div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <aura:iteration items="{!v.lstSUTAQuoteToInsert}" var="oQuote" indexVar="index">
+                                    <tr Id="{!'ST__'+index}" aria-selected="false" class="slds-hint-parent">
+                                        <th scope="row" tabindex="0">
+                                            <div class="slds-truncate" style="margin-top:40px;">
+                                                <c:LightningLookup sObjectName="State__c"
+                                                                   valueFieldName="Id"
+                                                                   hidelabel="true"
+                                                                   displayedFieldName="Name"
+                                                                   selectedValue="{!oQuote.State__c}"
+                                                                   svg="custom:custom39"/>
+                                            </div>
+                                        </th>
+                                        <td role="gridcell">
+                                            <div class="slds-truncate">
+                                                <lightning:buttonIcon iconName="utility:delete"  alternativeText="Delete" title="Delete" name="{!index}" onclick="{!c.handleAddStateDelete}"/>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </aura:iteration>
+                            </tbody>
+                        </table>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_brand" type="button" onclick="{!c.handleAddMoreStateModal}">
+                            <lightning:icon iconName="utility:add" size="xx-small" variant="inverse" class="slds-p-right_x-small"/> Add
+                        </button>
+                        <button class="slds-button slds-button_brand" type="button" onclick="{!c.handleAddStateModal}">Save</button>
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCloseAddStateModal}">Cancel</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        
+        <!--Add Location Modal-->
+        <aura:if isTrue="{!v.isShowAddLocationModal}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_medium" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                <div class="slds-modal__container">
+                    <!--spinner-->
+                    <lightning:spinner aura:id="addlocationmodalspinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.handleCancelAddLocation}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">{!(v.selectedStateName!=null?v.selectedStateName:'Add Location')}</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <div class="slds-grid slds-wrap">
+                            <div class="slds-size_1-of-2 slds-p-right_small">
+                                <lightning:input type="number" name="input1" label="Loc #" value="{!v.oClientLocation.Loc__c}" disabled="true"/>
+                            </div>
+                            <div class="slds-size_1-of-2">
+                                <lightning:input name="street" label="Street" value="{!v.oClientLocation.Street__c}" required="true" aura:id="street"/>
+                            </div>
+                            <div class="slds-size_1-of-2 slds-p-right_small" style="padding-top:10px;">
+                                <lightning:input name="city" label="City" value="{!v.oClientLocation.City__c}" required="true" aura:id="city"/>
+                            </div>
+                            <div class="slds-size_1-of-2">
+                                <aura:if isTrue="{!v.isTerritorialRating}">
+                                    <c:LightningLookup sObjectName="Zip_Code__c"
+                                                       valueFieldName="Id"
+                                                       displayedFieldName="Name"
+                                                       label="Postal Code"
+                                                       required="true"
+                                                       selectedValue="{!v.oClientLocation.Postal_Code__c}"
+                                                       svg="custom:custom39"/>
+                                    
+                                    <aura:set attribute="else">
+                                        <div style="padding-top:10px;">
+                                        	<lightning:input name="Zip_Code" label="Zip Code" value="{!v.oClientLocation.Zip_Code__c}" required="true" aura:id="Zip_Code"/>
+                                        </div>
+                                    </aura:set>
+                                    
+                                </aura:if>
+                            </div>
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCancelAddLocation}">Cancel</button>
+                        <button class="slds-button slds-button_brand" type="button" onclick="{!c.handleAddLocation}">Save</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        
+        <!--Add Location Modal-->
+        <aura:if isTrue="{!v.isShowAddWCRateModal}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_medium" aria-labelledby="modal-heading-02" aria-modal="true" aria-describedby="modal-content-id-2">
+                <div class="slds-modal__container">
+                    <!--spinner-->
+                    <lightning:spinner aura:id="addratemodalspinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.handleCancelAddWCRateModal}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-02" class="slds-modal__title slds-hyphenate">{!(v.oWCRate.SUTA_Quote__r.State__c!=null&amp;&amp;v.oWCRate.SUTA_Quote__r.State__c!=undefined?'Edit '+v.oWCRate.SUTA_Quote__r.State__r.Name:'Add WC Rate')}</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-2">
+                        <div class="slds-grid slds-wrap">
+                            <div class="slds-size_1-of-2 slds-p-right_small">
+                                <aura:if isTrue="{!v.wcRateWhereClause != null &amp;&amp; v.wcRateWhereClause != undefined}">
+                                
+                                     <c:LightningLookup sObjectName="State_Comp_Code__c"
+                                                   valueFieldName="Id"
+                                                   displayedFieldName="Code_Name_Description__c"
+                                                   label="WC Code"
+                                                   required="true"
+                                                   whereClause="{!v.wcRateWhereClause}"
+                                                   selectedValue="{!v.oWCRate.State_Comp_Code__c}"
+                                                   svg="custom:custom39"
+                                                   aura:id="stateLookup"/>
+                                    
+                                    <aura:set attribute="else">
+                                    	 <c:LightningLookup sObjectName="State_Comp_Code__c"
+                                                   valueFieldName="Id"
+                                                   displayedFieldName="Code_Name_Description__c"
+                                                   label="WC Code"
+                                                   required="true"
+                                                   selectedValue="{!v.oWCRate.State_Comp_Code__c}"
+                                                   svg="custom:custom39"
+                                                   aura:id="stateLookup"/>
+                                    </aura:set>
+                                    
+                                </aura:if>
+                               
+                            </div>
+                            <div class="slds-size_1-of-2" style="padding-top: 10px;">
+                                <lightning:input type="number" label="# of Part-Time Employees" value="{!v.oWCRate.Part_Time_Employees__c}" required="true" aura:id="Part_Time_Employees_Rate" min="0"/>
+                            </div>
+                            <div class="slds-size_1-of-2 slds-p-right_small">
+                                <lightning:input type="number" label="# of Full-Time Employees" value="{!v.oWCRate.of_Employees__c}" required="true" aura:id="of_Employees_Rate" min="0"/>
+                            </div>
+                            <div class="slds-size_1-of-2">
+                                <lightning:input type="number" label="Gross Wages" value="{!v.oWCRate.Gross_Wages__c}" formatter="currency" step="0.01" required="true" aura:id="Gross_Wages_Rate" min="1"/>
+                            </div>
+                            <div class="slds-size_1-of-2 slds-p-right_small">
+                                <lightning:input type="number" label="Current Rate" value="{!v.oWCRate.Current_Rate__c}" formatter="percent-fixed" step="0.01"/>
+                            </div>
+                            
+                            <aura:if isTrue="{!v.oWCRate.Id != null &amp;&amp; v.oWCRate.Id != undefined}">
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-grid slds-wrap">
+                                        <div class="slds-size_6-of-7">
+                                            <lightning:select aura:id="location" required="true" value="{!v.oWCRate.Client_Location__c}" name="location" label="Location">
+                                                <option value="">--None--</option>
+                                                <aura:iteration items="{!v.mapClientLocationPicklistValues}" var="ind" indexVar="index">
+                                                    <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==v.oWCRate.Client_Location__c}" />
+                                                </aura:iteration>
+                                            </lightning:select>
+                                        </div>
+                                        <div class="slds-size_1-of-7 slds-text-align_right slds-p-top_large">
+                                            <lightning:buttonIcon iconName="utility:add" alternativeText="add" title="add" onclick="{!c.handleNewLocation}"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </aura:if>
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_brand" type="button" onclick="{!c.handleAddWCRateModal}">Save</button>
+                        <aura:if isTrue="{!v.oWCRate.Id == null || v.oWCRate.Id == undefined}">
+                        	<button class="slds-button slds-button_brand" type="button" onclick="{!c.handleAddWCRateModalAndMore}">Save and Add More</button>
+                        </aura:if>
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCancelAddWCRateModal}">Cancel</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        
+        <aura:if isTrue="{!v.isShowAddCompModal}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_medium" aria-labelledby="modal-heading-02" aria-modal="true" aria-describedby="modal-content-id-2">
+                <div class="slds-modal__container">
+                    <!--spinner-->
+                    <lightning:spinner aura:id="addcompmodalspinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.handleHideAddCompModal}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-02" class="slds-modal__title slds-hyphenate">{!(v.selectedStateName!=null?v.selectedStateName:'Add WC Code')}</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-2">
+                        <!--<aura:if isTrue="{!v.isShowAddState}">
+                            <div class="slds-grid slds-wrap">
+                                <div class="slds-size_1-of-1">
+                                    <lightning:select aura:id="state" value="{!v.selectedState}" name="state" label="State" required="true">
+                                        <option value="">None</option>
+                                        <aura:iteration items="{!v.mapStates}" var="ind" indexVar="index">
+                                            <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==v.selectedState}" />
+                                        </aura:iteration>
+                                    </lightning:select>
+                                </div>
+                            </div>
+                        </aura:if>-->
+                        
+                        <aura:if isTrue="{!v.isShowAddComp}">
+                            <div class="slds-grid slds-wrap">
+                                <div class="slds-size_1-of-2 slds-p-right_small">
+                                    <lightning:select aura:id="state" value="{!v.oWCRate.SUTA_Quote__r.State__c}" name="state" label="State" required="true" onchange="{!c.handleCompStateChange}">
+                                        <option value="">--None--</option>
+                                        <aura:iteration items="{!v.mapStates}" var="ind" indexVar="index">
+                                            <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==v.oWCRate.SUTA_Quote__r.State__c}" />
+                                        </aura:iteration>
+                                    </lightning:select>
+                                </div>
+                                
+                                <div class="slds-size_1-of-2">
+                                    <div class="slds-grid slds-wrap">
+                                        <div class="slds-size_6-of-7">
+                                            <lightning:select aura:id="location" value="{!v.oWCRate.Client_Location__c}" name="location" label="Location">
+                                                <option value="">--None--</option>
+                                                <aura:iteration items="{!v.mapClientLocationPicklistValues}" var="ind" indexVar="index">
+                                                    <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==v.oWCRate.Client_Location__c}" />
+                                                </aura:iteration>
+                                            </lightning:select>
+                                        </div>
+                                        <div class="slds-size_1-of-7 slds-text-align_right slds-p-top_large">
+                                            <lightning:buttonIcon iconName="utility:add" alternativeText="add" title="add" onclick="{!c.handleNewLocation}"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-size_1-of-2 slds-p-right_small">
+                                    <aura:if isTrue="{!v.wcCompWhereClause != null &amp;&amp; v.wcCompWhereClause != undefined}">
+                                    	<c:LightningLookup sObjectName="State_Comp_Code__c"
+                                                       valueFieldName="Id"
+                                                       displayedFieldName="Code_Name_Description__c"
+                                                       label="State Comp Code"
+                                                       selectedValue="{!v.oWCRate.State_Comp_Code__c}"
+                                                       whereClause="{!v.wcCompWhereClause}"
+                                                       required="true"
+                                                       svg="custom:custom39"/>
+                                        
+                                        <aura:set attribute="else">
+                                        	<c:LightningLookup sObjectName="State_Comp_Code__c"
+                                                       valueFieldName="Id"
+                                                       displayedFieldName="Code_Name_Description__c"
+                                                       label="State Comp Code"
+                                                       selectedValue="{!v.oWCRate.State_Comp_Code__c}"
+                                                       required="true"
+                                                       svg="custom:custom39"/>
+                                        </aura:set>
+                                        
+                                    </aura:if>
+                                    
+                                </div>
+                                
+                                <div class="slds-size_1-of-2" style="padding-top:10px;">
+                                	<lightning:input type="number" aura:id="rating" name="rating" label="Current Rate" value="{!v.oWCRate.Current_Rate__c}" formatter="percent-fixed" step="0.01"/>
+                                </div>
+                                
+                                <div class="slds-size_1-of-2 slds-p-right_small">
+                                	<lightning:input type="number" aura:id="numberEmployees" name="numberOfEmployees" label="# of Full Time Employees" value="{!v.oWCRate.of_Employees__c}" required="true" min="0"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                	<lightning:input type="number" aura:id="numberPartEmployees" name="numberOfEmployees" label="# of Part Time Employees" value="{!v.oWCRate.Part_Time_Employees__c}" required="true" min="0"/>
+                                </div>
+                                
+                                 <div class="slds-size_1-of-2 slds-p-right_small">
+                                	<lightning:input type="number" aura:id="grossWage" name="grossWages" label="Gross Wages" value="{!v.oWCRate.Gross_Wages__c}" formatter="currency" step="0.01" required="true" min="1"/>
+                                </div>
+                                
+                            </div>
+                        </aura:if>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleHideAddCompModal}">Cancel</button>
+                        <!--<aura:if isTrue="{!v.isShowAddState}">
+                        	<button class="slds-button slds-button_brand" type="button" onclick="{!c.handleAddCompstoState}">Add Comps to State</button>
+                        </aura:if>-->
+                        <aura:if isTrue="{!v.isShowAddComp}">
+                            <button class="slds-button slds-button_brand" type="button" onclick="{!c.handleCreateWCCode}">Save</button>
+                            <button class="slds-button slds-button_brand" type="button" onclick="{!c.handleCreateAndNewAddWCCode}">Save and Add</button>
+                        </aura:if>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        
+        <aura:if isTrue="{!v.isNewClientLocation}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_large" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                <!--spinner-->
+        		<lightning:spinner aura:id="newmodalspinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.handleCloseNewLocationModal}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">New Client Location - {!v.oClientLocation.Loc__c}</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <div class="slds-grid slds-wrap">
+                            <div class="slds-size_1-of-2 slds-p-right_small">
+                                <lightning:input type="number" name="input1" label="Loc #" value="{!v.oClientLocation.Loc__c}" disabled="true"/>
+                            </div>
+                            <div class="slds-size_1-of-2">
+                                <lightning:input name="street" label="Street" value="{!v.oClientLocation.Street__c}" required="true" aura:id="street"/>
+                            </div>
+                            <div class="slds-size_1-of-2 slds-p-right_small">
+                                <lightning:input name="city" label="City" value="{!v.oClientLocation.City__c}" required="true" aura:id="city"/>
+                            </div>
+                            <!--<div class="slds-size_1-of-2">
+                                <lightning:input name="county" label="County" value="{!v.oClientLocation.County__c}"/>
+                            </div>-->
+                            <div class="slds-size_1-of-2 slds-p-right_small">
+                                <lightning:select value="{!v.selectedState}" name="state" label="State" disabled="true">
+                                    <option value="">--None--</option>
+                                    <aura:iteration items="{!v.mapStates}" var="ind" indexVar="index">
+                                        <option text="{!ind.value}" value="{!ind.key}" selected="{!ind.key==v.selectedState}" />
+                                    </aura:iteration>
+                                </lightning:select>
+                            </div>
+                            <div class="slds-size_1-of-2">
+                                <aura:if isTrue="{!v.isTerritorialRating}">
+                                    <c:LightningLookup sObjectName="Zip_Code__c"
+                                                       valueFieldName="Id"
+                                                       displayedFieldName="Name"
+                                                       label="Postal Code"
+                                                       required="true"
+                                                       selectedValue="{!v.oClientLocation.Postal_Code__c}"
+                                                       svg="custom:custom39"/>
+                                    
+                                    <aura:set attribute="else">
+                                        <div style="padding-top:10px;">
+                                        	<lightning:input name="Zip_Code" label="Zip Code" value="{!v.oClientLocation.Zip_Code__c}" required="true" aura:id="Zip_Code"/>
+                                        </div>
+                                    </aura:set>
+                                    
+                                </aura:if>
+                            </div>
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCloseNewLocationModal}">Cancel</button>
+                        <button class="slds-button slds-button_brand" type="button" onclick="{!c.handleSubmitNewLocationModal}">Save</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        
+        <aura:if isTrue="{!v.isShowEditLocationModal}">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_large" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                <!--spinner-->
+                <lightning:spinner aura:id="editclientmodalspinner" size="large" class="slds-hide" variant="brand" alternativeText="Loading..."/>
+                
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.handleCloseEditClientLocation}">
+                            <lightning:icon iconName="utility:close" variant="inverse"/>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Edit Client Location - {!v.oClientLocation.Loc__c}</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <lightning:recordEditForm   recordId="{!v.selectedClientLocationId}" 
+                                                    objectApiName="Client_Location__c"
+                                                    onsuccess="{!c.handleSuccessClientLocationRecord}"
+                                                    onerror="{!c.handleErrorClientLocationRecord}"
+                                                    aura:id="editForm">
+                            <lightning:messages />
+                            <div class="slds-grid slds-wrap">
+                                <div class="slds-size_1-of-2 slds-p-right_x-small">
+                                    <lightning:outputField fieldName="Loc__c"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="Street__c" required="true" aura:id="street"/>
+                                </div>
+                                
+                                <div class="slds-size_1-of-2 slds-p-right_x-small">
+                                    <lightning:inputField fieldName="City__c" required="true" aura:id="city"/>
+                                </div>
+                                <div class="slds-size_1-of-2">
+                                    <lightning:inputField fieldName="State__c" />
+                                </div>
+                                <aura:if isTrue="{!v.oClientLocation.State__c == 'California'}">
+                                    <div class="slds-size_1-of-2">
+                                        <lightning:inputField fieldName="Postal_Code__c" required="true" aura:id="Postal_Code"/>
+                                    </div>
+                                    
+                                    <aura:set attribute="else">
+                                        <div class="slds-size_1-of-2">
+                                            <lightning:inputField fieldName="Zip_Code__c" required="true" aura:id="zip_Code"/>
+                                        </div>
+                                    </aura:set>
+                                </aura:if>
+                            </div>
+                        </lightning:recordEditForm>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" type="button" onclick="{!c.handleCloseEditClientLocation}">Cancel</button>
+                        <button class="slds-button slds-button_brand" type="button" onclick="{!c.handleSaveEditClientLocation}">Save</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        
+    </div>
+</aura:component>

@@ -1,0 +1,32 @@
+<apex:page standardController="Proposal__c" extensions="PricingOverride" lightningStylesheets="true">
+<apex:sectionHeader title="Pricing Override"/>
+<apex:form >
+
+<apex:pageMessages ></apex:pageMessages>
+
+<apex:pageblock >
+  
+    <apex:pageblocksection columns="1">
+    
+    <apex:pageBlockSectionItem >
+        <apex:outputLabel >Approvers</apex:outputLabel>
+        <apex:selectCheckboxes value="{!selectedUsers}" layout="pageDirection">
+            <apex:selectOptions value="{!users}"/>
+        </apex:selectCheckboxes>
+     </apex:pageBlockSectionItem>
+     
+     <apex:pageBlockSectionItem >
+        <apex:outputLabel >Submitter Note</apex:outputLabel>
+        <apex:inputtextarea value="{!notes}" style="width:400px;height:60px;"/>
+     </apex:pageBlockSectionItem>
+            
+    </apex:pageblocksection>
+    
+    <apex:pageblockButtons location="bottom">
+        
+        <apex:commandButton value="Save" action="{!doSave}"/>
+        <apex:commandButton value="Cancel" action="{!Cancel}"/>
+    </apex:pageblockButtons>
+</apex:pageblock>
+</apex:form>
+</apex:page>

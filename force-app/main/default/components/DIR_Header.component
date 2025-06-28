@@ -1,0 +1,55 @@
+<apex:component controller="DIR_HeaderCtrl">
+    
+    <html lang="en" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <head>
+            <meta charset="utf-8" />
+            <meta http-equiv="x-ua-compatible" content="ie=edge" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            
+            <apex:slds />
+        </head> 
+        <body class="slds-scope">
+            <div>
+                <article class="slds-card slds-theme_default" >
+                    <div class="slds-card__body slds-card__body_inner">
+                        <ul class="slds-card__body_inner slds-grid slds-wrap slds-grid_pull-padded">
+                            <li class="slds-p-horizontal_medium slds-size_1-of-1 slds-medium-size_2-of-8">
+                                <img src="{!URLFOR($Resource[$Label.DIR_Logo])}" class="LogoCSS" />
+                            </li>
+                            <li class="slds-p-horizontal_medium slds-size_1-of-1 slds-medium-size_6-of-8">
+                                <div class="slds-grid" style="margin-bottom: 1rem;">
+                                    <div class="slds-col slds-has-flexi-truncate">
+                                        <div class="slds-media slds-no-space slds-grow">
+                                            <div id="searchWindow" class="slds-theme--default slds-container--large" style="width: 100%;">
+                                                <ul class="slds-card__body_inner slds-grid slds-wrap slds-grid_pull-padded slds-align_absolute-center">
+                                                    <li class="{!IF(isShowReturnToDirectoryBtn,'slds-p-horizontal_medium slds-size_1-of-1 slds-medium-size_5-of-8','slds-p-horizontal_medium slds-size_1-of-1 slds-medium-size_7-of-8')}" style="margin-top:4%;">
+                                                        <div class="slds-form-element slds-grid_pull-padded marginButtomCSS">
+                                                            <apex:outputPanel id="searchPanel">
+                                                                <div class="slds-form-element__control">
+                                                                    <apex:input type="text" styleClass="slds-input" value="{!searchString}"
+                                                                                html-placeholder="Search by Employee Name"/>
+                                                                    <p class="slds-required" style="font-weight: 600;">{!searchError}</p>
+                                                                </div>
+                                                            </apex:outputPanel>
+                                                        </div>
+                                                    </li>
+                                                    <li class="{!IF(isShowReturnToDirectoryBtn,'slds-p-horizontal_medium slds-size_1-of-1 slds-medium-size_3-of-8 slds-align_absolute-center','slds-p-horizontal_medium slds-size_1-of-1 slds-medium-size_1-of-8 slds-align_absolute-center')}" style="margin-top:4%;">
+                                                        <apex:commandButton value="Search" action="{!doSearch}" styleClass="slds-button slds-button--brand searchBtnCSS"
+                                                                            reRender="pageMessagePanel,searchPanel" />
+                                                        &nbsp;
+                                                        <apex:commandButton value="Return to Directory" action="{!doReturnToDirectory}"
+                                                                            styleClass="slds-button slds-button--neutral" rendered="{!isShowReturnToDirectoryBtn}" />
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </article>
+            </div>
+        </body>
+    </html>
+</apex:component>

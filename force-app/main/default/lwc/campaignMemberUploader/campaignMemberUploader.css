@@ -1,0 +1,19 @@
+.custom-container{
+	color : black;
+}
+/* .wrapped-text {
+    white-space: normal;
+} */
+
+.modal_container_expand {
+    max-width: 80rem !important;
+    width: 80% !important;
+	/* height: auto !important;
+	overflow: auto; */
+}
+
+.modal_block {
+    display: block;
+    --slds-c-modal-color-border: black;
+    border: 0.5px solid var(--slds-c-modal-color-border);
+}

@@ -1,0 +1,74 @@
+<template>
+    <template if:true={showButton}>
+        <lightning-button variant="brand-outline" 
+                        label="Create Proposals"  
+                        onclick={handleClick} 
+                        class="slds-m-left_x-small">
+        </lightning-button>
+    </template>
+
+        <template if:true={showTemplate}>
+            <c-modal-component is-open={handleClick} onclose={hideModalBox}>
+                    <div class="slds-p-around_medium slds-size_1-of-3 slds-p-left_small slds-text-align_left" >
+                        <lightning-input type="number"
+                                         label="How many Proposals do you want to create?"
+                                         placeholder="Enter Number"
+                                         value={proposalCount}
+                                         onchange={handleInputChange}
+                                         required> 
+                        </lightning-input>
+                    </div>
+
+                    <div slot="footer">
+                        <lightning-button variant="brand-outline" 
+                                          label="Back"
+                                          class="slds-float_left"
+                                          onclick={handleBack}>
+                        </lightning-button>
+
+						<lightning-button variant="brand-outline" 
+                                          label="Next"
+                                          onclick={handleNext}>
+                        </lightning-button>
+                    </div>
+                </c-modal-component>
+            </template>
+
+            <template if:true={showShellTable}>
+                <c-modal-component is-open={handleClick} 
+                                   onclose={hideModalBox} 
+                                   title="Select Shells for Each Proposals">
+
+                    <template for:each={proposalTables} for:item="table" for:index="index">
+                        <div key={table.id} class="slds-p-around_medium slds-text-align_center">
+                            <h3 class="slds-text-heading_small slds-m-bottom_small">Proposal {table.id}</h3>
+                                <lightning-datatable
+                                    key-field="Id"
+                                    data={table.data}
+                                    columns={columns}
+                                    selected-rows={table.selectedShells}
+                                    row-number-offset="0"
+                                    row-attributes="rowAttributes"
+                                    data-index={index}
+                                    onrowselection={handleRowSelection}>
+                                </lightning-datatable>
+                        </div>
+                    </template>
+
+                    <div slot="footer">
+                        <lightning-button variant="brand-outline" 
+                                          label="Back"
+                                          class="slds-float_left"
+                                          onclick={handleBack2}>
+                        </lightning-button>
+
+                        <lightning-button type="submit"
+                                          name="submit"
+                                          variant="brand-outline" 
+                                          label="Submit"
+                                          onclick={handleSubmit}>
+                        </lightning-button>
+                    </div>
+                </c-modal-component>
+            </template>
+</template>
